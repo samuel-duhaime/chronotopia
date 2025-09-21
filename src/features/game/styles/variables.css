@@ -1,0 +1,34 @@
+:root {
+  /* Text Styles */
+  /* TODO: Import Fonts from Google Fonts */
+  --text-h1: 700 56px/1.2 "Saira Stencil One", Arial, sans-serif;
+  --text-h2: 700 40px/1.2 Oxanium, Arial, sans-serif;
+  --text-h3: 700 32px/1.2 Oxanium, Arial, sans-serif;
+  --text-h4: 700 24px/1.2 Oxanium, Arial, sans-serif;
+  --text-button: 700 24px/1.2 Roboto, Arial, sans-serif;
+  --text-body: 400 20px/1.5 Roboto, Arial, sans-serif;
+  --text-small: 400 16px/1.5 Roboto, Arial, sans-serif;
+
+  /* Color Variables */
+  --color-border: #007EFF; /* Border */
+  --color-background: #131314; /* Main background */
+  --color-background-primary: #1C1E45; /* Background Primary */
+  --color-background-secondary: #164186; /* Background Secondary */
+  --color-background-tertiary: #5082D1; /* Background Tertiary */
+  --color-dark: #313133; /* Alternate backgrounds */
+  --color-medium: #4A4A4D; /* Decorative borders */
+  --color-light: #7D7D80; /* Non-decorative borders */
+  --color-lightest: #A4A4A6; /* Secondary text */
+  --color-white: #ffffff; /* Heading text */
+  --color-success: #4caf50; /* Success messages */
+  --color-alert: #D0464A; /* Alert messages */
+
+  /* Spacing */
+  --spacing-xs: 6px;
+  --spacing-s: 12px;
+  --spacing-m: 20px;
+  --spacing-l: 28px;
+  --spacing-xl: 36px;
+  --spacing-xxl: 56px;
+  --corner-radius: 20px;
+}
