@@ -1,5 +1,3 @@
-@import "../../styles/variables.css";
-
 .right-menu-panel {
   position: fixed;
   display: flex;
@@ -16,6 +14,9 @@
 }
 
 .turn-count {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
   font: var(--text-body);
   color: var(--color-white);
 }

@@ -3,16 +3,21 @@ import Phaser from "phaser";
 import "./App.css";
 import { RightMenu } from "./features/menu/RightMenu";
 import { GameScene } from "./features/game/GameScene";
+import { ActionPanel } from "./features/menu/ActionPanel";
+import { Loading } from "./features/common/Loading";
 
 export const App = () => {
   const gameRef = useRef<HTMLDivElement>(null);
+  const [loading, setLoading] = useState(true);
   const [turn, setTurn] = useState(1);
+  const [actionDescription, setActionDescription] = useState("");
+  const [actionEvent, setActionEvent] = useState<() => void>(() => {});
 
   useEffect(() => {
     let phaserGame: Phaser.Game | undefined;
     let gameSceneInstance: Phaser.Scene | undefined;
 
-    // Handle window resize
+    // Resize Phaser game when window size changes
     function resizeGame() {
       if (phaserGame && gameRef.current) {
         phaserGame.scale.resize(
@@ -23,9 +28,8 @@ export const App = () => {
     }
     window.addEventListener("resize", resizeGame);
 
-    // Only initialize the game once
+    // Initialize Phaser game only once
     if (gameRef.current) {
-      // Create the Phaser game instance
       phaserGame = new Phaser.Game({
         type: Phaser.AUTO,
         width: gameRef.current.offsetWidth,
@@ -34,23 +38,37 @@ export const App = () => {
         scene: GameScene,
       });
 
-      // Update turn state when it changes in the game scene
+      // When Phaser game is ready, get GameScene instance
       phaserGame.events.on("ready", () => {
-        gameSceneInstance = phaserGame?.scene.getScene("GameScene");
+        gameSceneInstance = phaserGame?.scene.getScene(
+          "GameScene"
+        ) as GameScene;
         if (gameSceneInstance) {
+          // Listen for turn changes in the registry and update React state
           gameSceneInstance.registry.events.on(
             "changedata-turn",
-            (_: any, value: number) => {
+            (_: unknown, value: number) => {
               setTurn(value);
             }
           );
-          // Set initial turn value
-          setTurn(gameSceneInstance.registry.get("turn"));
+
+          // Set initial turn value from GameScene method
+          setTurn((gameSceneInstance as GameScene).getTurn());
+
+          // Get current action from GameScene and pass to ActionPanel
+          const currentAction = (
+            gameSceneInstance as GameScene
+          ).getCurrentAction?.();
+          if (currentAction) {
+            setActionDescription(currentAction.description);
+            setActionEvent(() => currentAction.event);
+          }
+          setLoading(false); // Scene is loaded
         }
       });
     }
 
-    // Cleanup on unmount
+    // Cleanup Phaser game and event listeners on unmount
     return () => {
       window.removeEventListener("resize", resizeGame);
       phaserGame?.destroy(true);
@@ -59,11 +77,24 @@ export const App = () => {
 
   return (
     <>
+      {/* Phaser game container */}
       <div
         ref={gameRef}
         style={{ width: "100vw", height: "100vh", overflow: "hidden" }}
       />
-      <RightMenu turn={turn} />
+      {loading ? (
+        <Loading />
+      ) : (
+        <>
+          {/* Right menu displays current turn */}
+          <RightMenu turn={turn} />
+          {/* ActionPanel uses first action from GameScene */}
+          <ActionPanel
+            actionDescription={actionDescription}
+            actionEvent={actionEvent}
+          />
+        </>
+      )}
     </>
   );
 };
