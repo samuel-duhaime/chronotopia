@@ -8,7 +8,9 @@ export type Player = {
 
 export type Action = {
   id: string;
-  type: string; // TODO: Define specific action types
+  description: string;
+  event: () => void;
+  // ...other action properties
 };
 
 export type GameTypeProps = "Demo" | "Normal" | "Campaign" | "Skirmish";
@@ -18,7 +20,7 @@ export type GameSceneProps = {
   name: string;
   type: GameTypeProps;
   turn: number;
-  actions?: Action[];
+  actions: Action[];
   players?: Player[];
 };
 
@@ -37,8 +39,14 @@ export class GameScene extends Phaser.Scene implements GameSceneProps {
     this.id = "1";
     this.name = "Demo Game";
     this.type = "Demo";
-    this.turn = 8;
-    this.actions = [];
+    this.turn = 1;
+    this.actions = [
+      {
+        id: "1",
+        description: "Next Turn",
+        event: () => this.nextTurn(),
+      },
+    ];
     this.players = [];
   }
 
@@ -52,28 +60,28 @@ export class GameScene extends Phaser.Scene implements GameSceneProps {
   }
 
   getId() {
-    return this.registry.get("id");
+    return this.registry.get("id") as string;
   }
   setId(id: string) {
     this.registry.set("id", id);
   }
 
   getName() {
-    return this.registry.get("name");
+    return this.registry.get("name") as string;
   }
   setName(name: string) {
     this.registry.set("name", name);
   }
 
   getType() {
-    return this.registry.get("type");
+    return this.registry.get("type") as GameTypeProps;
   }
   setType(type: GameTypeProps) {
     this.registry.set("type", type);
   }
 
   getTurn() {
-    return this.registry.get("turn");
+    return this.registry.get("turn") as number;
   }
   setTurn(turn: number) {
     this.registry.set("turn", turn);
@@ -83,7 +91,11 @@ export class GameScene extends Phaser.Scene implements GameSceneProps {
   }
 
   getActions() {
-    return this.registry.get("actions");
+    return this.registry.get("actions") as Action[];
+  }
+  getCurrentAction() {
+    const actions = this.getActions();
+    return actions.length > 0 ? actions[0] : null;
   }
   addAction(action: Action) {
     const actions = this.registry.get("actions") as Action[];
@@ -91,7 +103,7 @@ export class GameScene extends Phaser.Scene implements GameSceneProps {
   }
 
   getPlayers() {
-    return this.registry.get("players");
+    return this.registry.get("players") as Player[];
   }
   addPlayer(player: Player) {
     const players = this.registry.get("players") as Player[];
