@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState } from "react";
 import Phaser from "phaser";
 import "./App.css";
+import { ResourcesMenu } from "./features/menu/ResourcesMenu";
 import { RightMenu } from "./features/menu/RightMenu";
-import { GameScene } from "./features/game/GameScene";
+import { GameScene, type Resource } from "./features/game/GameScene";
 import { ActionPanel } from "./features/menu/ActionPanel";
 import { Loading } from "./features/common/Loading";
 
@@ -12,6 +13,7 @@ export const App = () => {
   const [turn, setTurn] = useState(1);
   const [actionDescription, setActionDescription] = useState("");
   const [actionEvent, setActionEvent] = useState<() => void>(() => {});
+  const [resources, setResources] = useState<Resource[]>([]);
 
   useEffect(() => {
     let phaserGame: Phaser.Game | undefined;
@@ -63,6 +65,11 @@ export const App = () => {
             setActionDescription(currentAction.description);
             setActionEvent(() => currentAction.event);
           }
+
+          // Get resources from GameScene and pass to ResourcesMenu
+          const resources = (gameSceneInstance as GameScene).getResources();
+          setResources(resources);
+
           setLoading(false); // Scene is loaded
         }
       });
@@ -86,8 +93,12 @@ export const App = () => {
         <Loading />
       ) : (
         <>
+          {/* Top middle menu to display resources */}
+          <ResourcesMenu resources={resources} />
+
           {/* Right menu displays current turn */}
           <RightMenu turn={turn} />
+
           {/* ActionPanel uses first action from GameScene */}
           <ActionPanel
             actionDescription={actionDescription}

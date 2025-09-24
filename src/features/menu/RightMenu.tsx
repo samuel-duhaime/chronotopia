@@ -1,7 +1,7 @@
 import React from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faClock, faGear } from "@fortawesome/free-solid-svg-icons";
-import "./RightMenu.css";
+import "./Menu.css";
 
 interface RightMenuProps {
   turn: number;
@@ -10,15 +10,15 @@ interface RightMenuProps {
 // TODO: Add turn icon
 export const RightMenu: React.FC<RightMenuProps> = ({ turn }) => {
   return (
-    <div className="right-menu-panel">
-      <div className="turn-count">
+    <div className="menu right-menu-panel">
+      <div className="menu-resource">
         <FontAwesomeIcon icon={faClock} />
         {turn}
       </div>
       <button className="menu-btn">
         <FontAwesomeIcon icon={faGear} />
       </button>
-      <button className="exit-btn">Exit</button>
+      <button className="menu-btn">Exit</button>
     </div>
   );
 };
