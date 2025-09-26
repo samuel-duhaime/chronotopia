@@ -1,6 +1,67 @@
-# React + TypeScript + Vite
+# Chronotopia
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A strategy/resource management game built with React, TypeScript, and Phaser.
+
+## Game Overview
+
+Chronotopia is a turn-based strategy game where players manage different types of resources (Crypto, Influence, Science, Happiness, Planets Capacity, Fleet Capacity) to achieve victory. The game features a space exploration theme with fleet and planet management mechanics.
+
+## Current Status
+
+The game is in early development with core gameplay mechanics implemented:
+- ✅ Turn-based resource management system
+- ✅ Multiple resource types with different properties
+- ✅ Basic UI with resource display and action controls
+- ✅ Unit tests for game logic
+- ✅ Build pipeline and development tools
+
+## Steam Integration Documentation
+
+This repository contains comprehensive documentation for integrating Chronotopia with Steam:
+
+- **[Steam Integration Roadmap](./STEAM_INTEGRATION_ROADMAP.md)** - Complete technical and business roadmap for Steam release
+- **[GitHub Issue Template](./GITHUB_ISSUE_TEMPLATE.md)** - Ready-to-use GitHub issue template for tracking Steam integration
+- **[Steam Checklist](./STEAM_CHECKLIST.md)** - Quick reference checklist organized by priority
+- **[Technical Implementation Guide](./TECHNICAL_IMPLEMENTATION.md)** - Detailed code examples and implementation steps
+
+## Getting Started
+
+### Installation
+```bash
+npm install
+```
+
+### Development
+```bash
+npm run dev          # Start development server
+npm run build        # Build for production
+npm run test:unit    # Run unit tests
+npm run lint         # Run ESLint
+```
+
+### Game Controls
+- Click "Next Turn" to advance the game and gain resources
+- Watch your resources grow each turn based on their `perTurn` values
+- Resources with thresholds (Science, Happiness) provide benefits when reached
+- Capacity resources (Planets, Fleet) have maximum limits
+
+## Technology Stack
+
+- **React 19** - UI framework
+- **TypeScript** - Type-safe JavaScript
+- **Phaser 3** - Game engine for rendering and game logic
+- **Vite** - Build tool and development server
+- **Jest** - Unit testing framework
+- **FontAwesome** - Icons for resources and UI
+
+## Architecture
+
+The game follows a modular architecture:
+- `/src/features/game/` - Core game logic and Phaser integration
+- `/src/features/menu/` - UI components for resources and actions
+- `/src/features/common/` - Shared components and utilities
+
+## Vite Plugins
 
 Currently, two official plugins are available:
 
