@@ -13,16 +13,16 @@ import {
 
 describe("GameScene Unit Tests", () => {
   beforeEach(() => {
-    (GameScene.prototype as any).registry = {
-      store: {},
-      set(key: string, value: unknown) {
-        this.store[key] = value;
-        return this; // Fix: match DataRegistry type
+    const store: Record<string, unknown> = {};
+    (GameScene.prototype as Phaser.Scene).registry = {
+      set: (key: string, value: unknown) => {
+        store[key] = value;
+        return (GameScene.prototype as Phaser.Scene).registry;
       },
-      get(key: string) {
-        return this.store[key];
+      get: (key: string) => {
+        return store[key];
       },
-    };
+    } as unknown as Phaser.Data.DataManager;
   });
 
   it("should initialize with default values", () => {
