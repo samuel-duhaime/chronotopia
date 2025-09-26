@@ -3,21 +3,20 @@ import Phaser from "phaser";
 import "./App.css";
 import { ResourcesMenu } from "./features/menu/ResourcesMenu";
 import { RightMenu } from "./features/menu/RightMenu";
-import { GameScene, type Resource } from "./features/game/GameScene";
+import { GameScene } from "./features/game/GameScene";
 import { ActionPanel } from "./features/menu/ActionPanel";
 import { Loading } from "./features/common/Loading";
 
 export const App = () => {
   const gameRef = useRef<HTMLDivElement>(null);
   const [loading, setLoading] = useState(true);
-  const [turn, setTurn] = useState(1);
-  const [actionDescription, setActionDescription] = useState("");
-  const [actionEvent, setActionEvent] = useState<() => void>(() => {});
-  const [resources, setResources] = useState<Resource[]>([]);
+  const [game, setGame] = useState<ReturnType<GameScene["getGame"]>>(
+    {} as ReturnType<GameScene["getGame"]>
+  );
 
   useEffect(() => {
     let phaserGame: Phaser.Game | undefined;
-    let gameSceneInstance: Phaser.Scene | undefined;
+    let gameSceneInstance: GameScene | undefined;
 
     // Resize Phaser game when window size changes
     function resizeGame() {
@@ -46,30 +45,16 @@ export const App = () => {
           "GameScene"
         ) as GameScene;
         if (gameSceneInstance) {
-          // Listen for turn changes in the registry and update React state
-          gameSceneInstance.registry.events.on(
-            "changedata-turn",
-            (_: unknown, value: number) => {
-              setTurn(value);
-            }
-          );
+          // Listen for any game state change (turn/resources/actions/players)
+          const updateState = () => {
+            const currentGame = gameSceneInstance!.getGame();
+            setGame(currentGame);
+          };
 
-          // Set initial turn value from GameScene method
-          setTurn((gameSceneInstance as GameScene).getTurn());
+          // Listen for any game state change (turn/resources/actions/players)
+          gameSceneInstance.registry.events.on("changedata", updateState);
 
-          // Get current action from GameScene and pass to ActionPanel
-          const currentAction = (
-            gameSceneInstance as GameScene
-          ).getCurrentAction?.();
-          if (currentAction) {
-            setActionDescription(currentAction.description);
-            setActionEvent(() => currentAction.event);
-          }
-
-          // Get resources from GameScene and pass to ResourcesMenu
-          const resources = (gameSceneInstance as GameScene).getResources();
-          setResources(resources);
-
+          updateState(); // Set initial state from GameScene
           setLoading(false); // Scene is loaded
         }
       });
@@ -94,15 +79,15 @@ export const App = () => {
       ) : (
         <>
           {/* Top middle menu to display resources */}
-          <ResourcesMenu resources={resources} />
+          <ResourcesMenu resources={game.resources} />
 
           {/* Right menu displays current turn */}
-          <RightMenu turn={turn} />
+          <RightMenu turn={game.turn} />
 
           {/* ActionPanel uses first action from GameScene */}
           <ActionPanel
-            actionDescription={actionDescription}
-            actionEvent={actionEvent}
+            actionDescription={game.actions?.[0]?.description}
+            actionEvent={game.actions?.[0]?.event}
           />
         </>
       )}
