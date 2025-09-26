@@ -4,8 +4,6 @@ on:
     branches: ["*"]
   pull_request:
     branches: ["*"]
-  commit:
-    branches: ["*"]
 
 jobs:
   build-and-test:
@@ -39,7 +37,8 @@ jobs:
 
       # TODO: Add formatting command to package.json
       - name: Check formatting
-        run: npm run format || echo "No format script found"
+        run: npm run format
+        continue-on-error: true
 
       - name: Build project
         run: npm run build
@@ -47,7 +46,6 @@ jobs:
       # Upload the build output (from the dist/ directory) as a workflow artifact.
       # This allows you to download the built files from the workflow run summary.
       - name: Upload build artifacts
-        if: success()
         uses: actions/upload-artifact@v4
         with:
           name: build
