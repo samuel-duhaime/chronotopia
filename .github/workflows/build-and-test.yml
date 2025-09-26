@@ -35,10 +35,9 @@ jobs:
       - name: Lint code
         run: npm run lint
 
-      # TODO: Add formatting command to package.json
       - name: Check formatting
         run: npm run format
-        continue-on-error: true
+        continue-on-error: true # TODO: Remove this line once format script is added
 
       - name: Build project
         run: npm run build
