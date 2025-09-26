@@ -1,0 +1,56 @@
+name: build-and-test
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  commit:
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22.x"
+
+      # This section configures the cache for npm dependencies.
+      # The 'path' specifies the directory to cache (~/.npm).
+      # The 'key' uniquely identifies the cache using the OS and a hash of all package-lock.json files.
+      # The 'restore-keys' provides a fallback key to restore a previous cache if an exact match is not found.
+      - name: Cache node modules
+        uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Lint code
+        run: npm run lint
+
+      # TODO: Add formatting command to package.json
+      - name: Check formatting
+        run: npm run format || echo "No format script found"
+
+      - name: Build project
+        run: npm run build
+
+      # Upload the build output (from the dist/ directory) as a workflow artifact.
+      # This allows you to download the built files from the workflow run summary.
+      - name: Upload build artifacts
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: build
+          path: dist/
+
+      - name: Run unit tests
+        run: npm test:unit"
