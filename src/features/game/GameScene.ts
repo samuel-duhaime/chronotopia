@@ -127,7 +127,7 @@ export class GameScene extends Phaser.Scene implements GameSceneProps {
         type: "Science",
         amount: 0,
         perTurn: 1,
-        threshold: 100,
+        threshold: 25,
         icon: faFlask,
       },
       {
@@ -162,6 +162,35 @@ export class GameScene extends Phaser.Scene implements GameSceneProps {
     this.registry.set("resources", this.resources);
   }
 
+  /**
+   * Returns all main game properties as an object for easy destructuring.
+   * @returns {GameSceneProps}
+   */
+  getGame(): GameSceneProps {
+    return {
+      id: this.getId(),
+      name: this.getName(),
+      type: this.getType(),
+      turn: this.getTurn(),
+      actions: this.getActions(),
+      players: this.getPlayers(),
+      resources: this.getResources(),
+    };
+  }
+
+  /**
+   * Sets all main game properties from a GameSceneProps object.
+   */
+  setGame(game: GameSceneProps) {
+    this.setId(game.id);
+    this.setName(game.name);
+    this.setType(game.type);
+    this.setTurn(game.turn);
+    this.setResources(game.resources);
+    this.registry.set("actions", game.actions);
+    this.registry.set("players", game.players ?? []);
+  }
+
   // Game ID
   getId() {
     return this.registry.get("id") as string;
@@ -194,6 +223,7 @@ export class GameScene extends Phaser.Scene implements GameSceneProps {
     this.registry.set("turn", turn);
   }
   nextTurn() {
+    this.updateResourcesNextTurn();
     this.setTurn(this.getTurn() + 1);
   }
 
@@ -225,5 +255,33 @@ export class GameScene extends Phaser.Scene implements GameSceneProps {
   }
   setResources(resources: Resource[]) {
     this.registry.set("resources", resources);
+  }
+  /**
+   * Updates all resources by their perTurn value at each next turn.
+   * Handles threshold logic for applicable resources.
+   */
+  updateResourcesNextTurn() {
+    const resources = this.getResources().map((resource) => {
+      if ("perTurn" in resource) {
+        let newAmount = resource.amount + resource.perTurn;
+
+        // Check if newAmount meets or exceeds the threshold
+        if ("threshold" in resource && typeof resource.threshold === "number") {
+          if (newAmount >= resource.threshold) {
+            // TODO: Trigger special event or bonus for reaching threshold
+            console.log(
+              `Threshold reached for ${resource.type}: ${resource.threshold}`
+            );
+            newAmount -= resource.threshold;
+          }
+        }
+        return {
+          ...resource,
+          amount: newAmount,
+        };
+      }
+      return resource;
+    });
+    this.setResources(resources);
   }
 }

@@ -3,7 +3,13 @@ jest.mock("phaser", () => ({
   Scene: class {},
 }));
 
-import { GameScene, type Player, type Action, type Resource } from "./GameScene";
+import {
+  GameScene,
+  type GameSceneProps,
+  type Player,
+  type Action,
+  type Resource,
+} from "./GameScene";
 
 describe("GameScene Unit Tests", () => {
   beforeEach(() => {
@@ -29,10 +35,90 @@ describe("GameScene Unit Tests", () => {
     expect(scene.players.length).toBe(0);
   });
 
+  it("should get all game properties with getGame", () => {
+    const scene = new GameScene();
+    scene.create();
+    const game = scene.getGame();
+    expect(game.id).toBe(scene.getId());
+    expect(game.name).toBe(scene.getName());
+    expect(game.type).toBe(scene.getType());
+    expect(game.turn).toBe(scene.getTurn());
+    expect(game.actions).toEqual(scene.getActions());
+    expect(game.players).toEqual(scene.getPlayers());
+    expect(game.resources).toEqual(scene.getResources());
+  });
+
+  it("should set all game properties with setGame", () => {
+    const scene = new GameScene();
+    scene.create();
+    const newGame: GameSceneProps = {
+      id: "99",
+      name: "Set Game Test",
+      type: "Skirmish" as GameScene["type"],
+      turn: 5,
+      actions: [{ id: "a1", description: "Action", event: () => {} }],
+      players: [{ id: "p2", name: "Bob" }],
+      resources: [
+        {
+          type: "Crypto",
+          amount: 100,
+          perTurn: 10,
+          icon: scene.resources[0].icon,
+        },
+        {
+          type: "Influence",
+          amount: 50,
+          perTurn: 5,
+          icon: scene.resources[1].icon,
+        },
+        {
+          type: "Science",
+          amount: 20,
+          perTurn: 2,
+          threshold: 10,
+          icon: scene.resources[2].icon,
+        },
+        {
+          type: "Happiness",
+          amount: 30,
+          perTurn: 3,
+          threshold: 15,
+          icon: scene.resources[3].icon,
+        },
+        {
+          type: "PlanetsCapacity",
+          amount: 2,
+          maxCapacity: 4,
+          icon: scene.resources[4].icon,
+        },
+        {
+          type: "FleetCapacity",
+          amount: 3,
+          maxCapacity: 6,
+          icon: scene.resources[5].icon,
+        },
+      ],
+    };
+    scene.setGame(newGame);
+    expect(scene.getId()).toBe("99");
+    expect(scene.getName()).toBe("Set Game Test");
+    expect(scene.getType()).toBe("Skirmish");
+    expect(scene.getTurn()).toBe(5);
+    expect(scene.getActions()).toEqual(newGame.actions);
+    expect(scene.getPlayers()).toEqual(newGame.players);
+    expect(scene.getResources()).toEqual(newGame.resources);
+  });
+
   it("should set and get id", () => {
     const scene = new GameScene();
     scene.setId("42");
     expect(scene.getId()).toBe("42");
+  });
+
+  it("should get and set name", () => {
+    const scene = new GameScene();
+    scene.setName("Test Game");
+    expect(scene.getName()).toBe("Test Game");
   });
 
   it("should add player", () => {
@@ -158,15 +244,63 @@ describe("GameScene Unit Tests", () => {
     }
   });
 
-  it("should get and set name", () => {
+  it("should update resources and turn correctly on nextTurn", () => {
     const scene = new GameScene();
-    scene.setName("Test Game");
-    expect(scene.getName()).toBe("Test Game");
-  });
-
-  it("should get and set type", () => {
-    const scene = new GameScene();
-    scene.setType("Campaign");
-    expect(scene.getType()).toBe("Campaign");
+    scene.create();
+    // Set resources with thresholds for testing
+    scene.setResources([
+      {
+        type: "Crypto",
+        amount: 5,
+        perTurn: 2,
+        icon: scene.resources[0].icon,
+      },
+      {
+        type: "Science",
+        amount: 9,
+        perTurn: 2,
+        threshold: 10,
+        icon: scene.resources[2].icon,
+      },
+      {
+        type: "Happiness",
+        amount: 49,
+        perTurn: 2,
+        threshold: 50,
+        icon: scene.resources[3].icon,
+      },
+      {
+        type: "PlanetsCapacity",
+        amount: 1,
+        maxCapacity: 2,
+        icon: scene.resources[4].icon,
+      },
+      {
+        type: "FleetCapacity",
+        amount: 1,
+        maxCapacity: 2,
+        icon: scene.resources[5].icon,
+      },
+      {
+        type: "Influence",
+        amount: 3,
+        perTurn: 1,
+        icon: scene.resources[1].icon,
+      },
+    ]);
+    // Spy on console.log for threshold
+    const logSpy = jest.spyOn(console, "log");
+    scene.nextTurn();
+    expect(scene.getTurn()).toBe(2);
+    const updatedResources = scene.getResources();
+    expect(updatedResources[0].amount).toBe(7); // Crypto: 5+2
+    expect(updatedResources[1].amount).toBe(1); // Science: 9+2=11, threshold=10, 11-10=1
+    expect(updatedResources[2].amount).toBe(1); // Happiness: 49+2=51, threshold=50, 51-50=1
+    expect(updatedResources[3].amount).toBe(1); // PlanetsCapacity unchanged
+    expect(updatedResources[4].amount).toBe(1); // FleetCapacity unchanged
+    expect(updatedResources[5].amount).toBe(4); // Influence: 3+1
+    expect(logSpy).toHaveBeenCalledWith("Threshold reached for Science: 10");
+    expect(logSpy).toHaveBeenCalledWith("Threshold reached for Happiness: 50");
+    logSpy.mockRestore();
   });
 });

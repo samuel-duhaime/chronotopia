@@ -12,17 +12,16 @@ export const ResourcesMenu: React.FC<ResourcesMenuProps> = ({ resources }) => {
     <div className="menu resources-menu-panel">
       {resources.map((resource) => (
         <div className="menu-resource" key={resource.type}>
-          <FontAwesomeIcon icon={resource.icon} /> {resource.amount}
+          <FontAwesomeIcon icon={resource.icon} />
+          {resource.amount}
           {/* Show perTurn value as superscript if present */}
-          {"perTurn" in resource && resource.perTurn ? (
+          {"perTurn" in resource && resource.perTurn && (
             <span className="resource-per-turn">+{resource.perTurn}</span>
-          ) : (
-            ""
           )}
           {/* Show maxCapacity value if present */}
-          {"maxCapacity" in resource && resource.maxCapacity
-            ? `/${resource.maxCapacity}`
-            : ""}
+          {"maxCapacity" in resource &&
+            resource.maxCapacity !== undefined &&
+            `/${resource.maxCapacity}`}
         </div>
       ))}
     </div>
