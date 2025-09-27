@@ -1,6 +1,6 @@
 # Chronotopia
 
-<img src="src/assets/images/chronotopia.png" alt="Chronotopia. Conquer Time. Rule everything." width="300" />
+<img src="public/assets/images/chronotopia.png" alt="Chronotopia. Conquer Time. Rule everything." width="300" />
 
 Chronotopia is a 4X space deckbuilding game built with Phaser, TypeScript, Vite, and React.
 
@@ -25,7 +25,7 @@ The objective is to release Chronotopia on Steam.
 | :--------------- | :-----: |
 | Turn system      |  Done   |
 | Resources system |  Done   |
-| Map system       | Planned |
+| Map system       |  Done   |
 | Planet system    | Planned |
 | Research system  | Planned |
 | Fleet system     | Planned |
