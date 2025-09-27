@@ -1,54 +1,53 @@
 name: build-and-test
 on:
-  push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
+    push:
+        branches: [main]
+    pull_request:
+        branches: [main]
 
 jobs:
-  build-and-test:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+    build-and-test:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: "22.x"
+            - name: Set up Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version: '22.x'
 
-      # This section configures the cache for npm dependencies.
-      # The 'path' specifies the directory to cache (~/.npm).
-      # The 'key' uniquely identifies the cache using the OS and a hash of all package-lock.json files.
-      # The 'restore-keys' provides a fallback key to restore a previous cache if an exact match is not found.
-      - name: Cache node modules
-        uses: actions/cache@v4
-        with:
-          path: ~/.npm
-          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node-
+            # This section configures the cache for npm dependencies.
+            # The 'path' specifies the directory to cache (~/.npm).
+            # The 'key' uniquely identifies the cache using the OS and a hash of all package-lock.json files.
+            # The 'restore-keys' provides a fallback key to restore a previous cache if an exact match is not found.
+            - name: Cache node modules
+              uses: actions/cache@v4
+              with:
+                  path: ~/.npm
+                  key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+                  restore-keys: |
+                      ${{ runner.os }}-node-
 
-      - name: Install dependencies
-        run: npm install
+            - name: Install dependencies
+              run: npm install
 
-      - name: Lint code
-        run: npm run lint
+            - name: Lint code
+              run: npm run lint
 
-      - name: Check formatting
-        run: npm run format
-        continue-on-error: true # TODO: Remove this line once format script is added
+            - name: Check formatting
+              run: npm run format:check
 
-      - name: Build project
-        run: npm run build
+            - name: Build project
+              run: npm run build
 
-      # Upload the build output (from the dist/ directory) as a workflow artifact.
-      # This allows you to download the built files from the workflow run summary.
-      - name: Upload build artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: build
-          path: dist/
+            # Upload the build output (from the dist/ directory) as a workflow artifact.
+            # This allows you to download the built files from the workflow run summary.
+            - name: Upload build artifacts
+              uses: actions/upload-artifact@v4
+              with:
+                  name: build
+                  path: dist/
 
-      - name: Run unit tests
-        run: npm run test:unit
+            - name: Run unit tests
+              run: npm run test:unit
