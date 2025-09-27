@@ -1,34 +1,31 @@
 import Phaser from 'phaser';
 import { faBitcoin } from '@fortawesome/free-brands-svg-icons';
 import { faGlobe, faFlask, faSmile, faEarth, faRocket } from '@fortawesome/free-solid-svg-icons';
+import { Map } from '../map/Map';
 
 export type Player = {
     id: string;
     name: string;
     // ...other player properties
 };
-
 export type Action = {
     id: string;
     description: string;
     event: () => void;
     // ...other action properties
 };
-
 export type CryptoResource = {
     type: 'Crypto';
     amount: number;
     perTurn: number;
     icon: typeof faBitcoin;
 };
-
 export type InfluenceResource = {
     type: 'Influence';
     amount: number;
     perTurn: number;
     icon: typeof faGlobe;
 };
-
 export type ScienceResource = {
     type: 'Science';
     amount: number;
@@ -36,7 +33,6 @@ export type ScienceResource = {
     threshold: number;
     icon: typeof faFlask;
 };
-
 export type HappinessResource = {
     type: 'Happiness';
     amount: number;
@@ -44,21 +40,18 @@ export type HappinessResource = {
     threshold: number;
     icon: typeof faSmile;
 };
-
 export type PlanetsCapacityResource = {
     type: 'PlanetsCapacity';
     amount: number;
     maxCapacity: number;
     icon: typeof faEarth;
 };
-
 export type FleetCapacityResource = {
     type: 'FleetCapacity';
     amount: number;
     maxCapacity: number;
     icon: typeof faRocket;
 };
-
 export type Resource =
     | CryptoResource
     | InfluenceResource
@@ -66,9 +59,7 @@ export type Resource =
     | HappinessResource
     | PlanetsCapacityResource
     | FleetCapacityResource;
-
 export type GameTypeProps = 'Demo' | 'Normal' | 'Campaign' | 'Skirmish';
-
 export type GameSceneProps = {
     id: string;
     name: string;
@@ -79,19 +70,22 @@ export type GameSceneProps = {
     resources: Resource[];
 };
 
-export class GameScene extends Phaser.Scene implements GameSceneProps {
+export class GameScene extends Phaser.Scene {
     id: string;
     name: string;
     type: GameTypeProps;
     turn: number;
     actions: Action[];
+    map: Map | undefined;
     players: Player[];
     resources: Resource[];
+    controls: Phaser.Cameras.Controls.SmoothedKeyControl | undefined;
+    cursors: Phaser.Types.Input.Keyboard.CursorKeys | undefined;
 
     // This constructor initializes the game scene
     constructor() {
+        // console.log('GameScene constructor');
         super({ key: 'GameScene' });
-
         this.id = '1';
         this.name = 'Demo Game';
         this.type = 'Demo';
@@ -104,49 +98,29 @@ export class GameScene extends Phaser.Scene implements GameSceneProps {
             }
         ];
         this.players = [];
+        this.map = undefined; // Will be initialized in create()
         this.resources = [
-            {
-                type: 'Crypto',
-                amount: 0,
-                perTurn: 1,
-                icon: faBitcoin
-            },
-            {
-                type: 'Influence',
-                amount: 0,
-                perTurn: 1,
-                icon: faGlobe
-            },
-            {
-                type: 'Science',
-                amount: 0,
-                perTurn: 1,
-                threshold: 25,
-                icon: faFlask
-            },
-            {
-                type: 'Happiness',
-                amount: 0,
-                perTurn: 1,
-                threshold: 100,
-                icon: faSmile
-            },
-            {
-                type: 'PlanetsCapacity',
-                amount: 1,
-                maxCapacity: 2,
-                icon: faEarth
-            },
-            {
-                type: 'FleetCapacity',
-                amount: 1,
-                maxCapacity: 2,
-                icon: faRocket
-            }
+            { type: 'Crypto', amount: 0, perTurn: 1, icon: faBitcoin },
+            { type: 'Influence', amount: 0, perTurn: 1, icon: faGlobe },
+            { type: 'Science', amount: 0, perTurn: 1, threshold: 25, icon: faFlask },
+            { type: 'Happiness', amount: 0, perTurn: 1, threshold: 100, icon: faSmile },
+            { type: 'PlanetsCapacity', amount: 1, maxCapacity: 2, icon: faEarth },
+            { type: 'FleetCapacity', amount: 1, maxCapacity: 2, icon: faRocket }
         ];
     }
 
+    preload() {
+        // console.log('Preloading assets...');
+        this.load.image('fleet', 'assets/images/fleet.png');
+        this.load.image('planetEarth', 'assets/images/planetEarth.png');
+    }
+
     create() {
+        this.map = new Map(this);
+        this.map.generateHexagonalMap();
+
+        // Initialize registry values
+        this.registry.set('map', this.map);
         this.registry.set('id', this.id);
         this.registry.set('name', this.name);
         this.registry.set('type', this.type);
@@ -154,6 +128,74 @@ export class GameScene extends Phaser.Scene implements GameSceneProps {
         this.registry.set('actions', this.actions);
         this.registry.set('players', this.players);
         this.registry.set('resources', this.resources);
+
+        // Camera controls
+        if (this.input?.keyboard) {
+            this.cursors = this.input?.keyboard.createCursorKeys();
+        }
+
+        // Smooth camera control config
+        const controlConfig = {
+            camera: this.cameras?.main, // The camera to control
+            left: this.cursors?.left, // Move camera left
+            right: this.cursors?.right, // Move camera right
+            up: this.cursors?.up, // Move camera up
+            down: this.cursors?.down, // Move camera down
+            acceleration: 2, // How quickly camera accelerates
+            drag: 0.2, // How quickly camera slows down
+            maxSpeed: 10 // Maximum camera speed
+        };
+        // Safety check for Phaser version compatibility
+        if (Phaser.Cameras && Phaser.Cameras.Controls && Phaser.Cameras.Controls.SmoothedKeyControl) {
+            this.controls = new Phaser.Cameras.Controls.SmoothedKeyControl(controlConfig);
+        }
+
+        // Camera zoom with mouse wheel
+        this.input?.on(
+            'wheel',
+            (
+                _pointer: Phaser.Input.Pointer,
+                _gameObjects: Phaser.GameObjects.GameObject[],
+                _deltaX: number,
+                deltaY: number
+            ) => {
+                if (deltaY > 0) {
+                    // Scroll down: zoom out
+                    this.cameras.main.setZoom(Math.max(0.5, this.cameras.main.zoom - 0.1));
+                } else if (deltaY < 0) {
+                    // Scroll up: zoom in
+                    this.cameras.main.setZoom(Math.min(4, this.cameras.main.zoom + 0.1));
+                }
+            }
+        );
+
+        // Camera drag with mouse
+        let dragStart: { x: number; y: number } | null = null;
+        let cameraStart: { x: number; y: number } | null = null;
+        this.input?.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
+            if (pointer.rightButtonDown() || pointer.leftButtonDown()) {
+                dragStart = { x: pointer.x, y: pointer.y };
+                cameraStart = { x: this.cameras.main.scrollX, y: this.cameras.main.scrollY };
+            }
+        });
+        this.input?.on('pointermove', (pointer: Phaser.Input.Pointer) => {
+            if (pointer.isDown && dragStart && cameraStart) {
+                const dx = (dragStart.x - pointer.x) / this.cameras.main.zoom;
+                const dy = (dragStart.y - pointer.y) / this.cameras.main.zoom;
+                this.cameras.main.scrollX = cameraStart.x + dx;
+                this.cameras.main.scrollY = cameraStart.y + dy;
+            }
+        });
+        this.input?.on('pointerup', () => {
+            dragStart = null;
+            cameraStart = null;
+        });
+    }
+
+    update(_time: number, delta: number) {
+        if (this.controls) {
+            this.controls.update(delta);
+        }
     }
 
     /**
@@ -226,8 +268,9 @@ export class GameScene extends Phaser.Scene implements GameSceneProps {
         return this.registry.get('actions') as Action[];
     }
     getCurrentAction() {
+        // console.log('Getting current action');
         const actions = this.getActions();
-        return actions.length > 0 ? actions[0] : null;
+        return Array.isArray(actions) && actions.length > 0 ? actions[0] : null;
     }
     addAction(action: Action) {
         const actions = this.registry.get('actions') as Action[];
@@ -255,6 +298,7 @@ export class GameScene extends Phaser.Scene implements GameSceneProps {
      * Handles threshold logic for applicable resources.
      */
     updateResourcesNextTurn() {
+        // console.log('Updating resources for next turn');
         const resources = this.getResources().map((resource) => {
             if ('perTurn' in resource) {
                 let newAmount = resource.amount + resource.perTurn;

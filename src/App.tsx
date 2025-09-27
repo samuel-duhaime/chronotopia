@@ -1,16 +1,19 @@
 import { useEffect, useRef, useState } from 'react';
 import Phaser from 'phaser';
-import './App.css';
+import BoardPlugin from 'phaser3-rex-plugins/plugins/board-plugin';
 import { ResourcesMenu } from './features/menu/ResourcesMenu';
 import { RightMenu } from './features/menu/RightMenu';
-import { GameScene } from './features/game/GameScene';
 import { ActionPanel } from './features/menu/ActionPanel';
 import { Loading } from './features/common/Loading';
+import { GameScene } from './features/game/GameScene';
+import './App.css';
 
+// App component
 export const App = () => {
     const gameRef = useRef<HTMLDivElement>(null);
     const [loading, setLoading] = useState(true);
     const [game, setGame] = useState<ReturnType<GameScene['getGame']>>({} as ReturnType<GameScene['getGame']>);
+    const [currentActionEvent, setCurrentActionEvent] = useState<(() => void) | undefined>(undefined);
 
     useEffect(() => {
         let phaserGame: Phaser.Game | undefined;
@@ -31,7 +34,16 @@ export const App = () => {
                 width: gameRef.current.offsetWidth,
                 height: gameRef.current.offsetHeight,
                 parent: gameRef.current,
-                scene: GameScene
+                scene: GameScene,
+                plugins: {
+                    scene: [
+                        {
+                            key: 'rexBoard',
+                            plugin: BoardPlugin,
+                            mapping: 'rexBoard'
+                        }
+                    ]
+                }
             });
 
             // When Phaser game is ready, get GameScene instance
@@ -40,8 +52,15 @@ export const App = () => {
                 if (gameSceneInstance) {
                     // Listen for any game state change (turn/resources/actions/players)
                     const updateState = () => {
-                        const currentGame = gameSceneInstance!.getGame();
-                        setGame(currentGame);
+                        if (gameSceneInstance != null) {
+                            // Passing the whole GameScene instance to React works because its properties are directly accessible
+                            // However, this is not recommended for React state, as class instances can cause subtle bugs
+                            // Using getGame() is safer and returns a plain JS object, which is more idiomatic for React
+                            // setGame(gameSceneInstance.getGame()); // Recommended
+                            // TODO: Works but not best practice
+                            setGame(gameSceneInstance);
+                            setCurrentActionEvent(gameSceneInstance.getCurrentAction()?.event);
+                        }
                     };
 
                     // Listen for any game state change (turn/resources/actions/players)
@@ -69,6 +88,7 @@ export const App = () => {
             ) : (
                 <>
                     {/* Top middle menu to display resources */}
+                    {/* console.log('game.resources:', game.resources)*/}
                     <ResourcesMenu resources={game.resources} />
 
                     {/* Right menu displays current turn */}
@@ -77,7 +97,7 @@ export const App = () => {
                     {/* ActionPanel uses first action from GameScene */}
                     <ActionPanel
                         actionDescription={game.actions?.[0]?.description}
-                        actionEvent={game.actions?.[0]?.event}
+                        actionEvent={currentActionEvent ?? (() => {})}
                     />
                 </>
             )}
