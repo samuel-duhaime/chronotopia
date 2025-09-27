@@ -1,50 +1,50 @@
 .menu {
-  position: fixed;
-  display: flex;
-  flex-direction: row;
-  align-items: flex-end;
-  background: var(--color-background-primary);
-  border-radius: var(--corner-radius);
-  border: var(--color-border) 2px solid;
-  padding: var(--spacing-s);
-  gap: var(--spacing-m);
-  z-index: 1000;
+    position: fixed;
+    display: flex;
+    flex-direction: row;
+    align-items: flex-end;
+    background: var(--color-background-primary);
+    border-radius: var(--corner-radius);
+    border: var(--color-border) 2px solid;
+    padding: var(--spacing-s);
+    gap: var(--spacing-m);
+    z-index: 1000;
 }
 
 .right-menu-panel {
-  top: 20px;
-  right: 20px;
+    top: 20px;
+    right: 20px;
 }
 
 .resources-menu-panel {
-  top: 20px;
-  left: 50%;
-  transform: translateX(-50%);
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
 }
 
 .menu-resource {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-xs);
-  font: var(--text-body);
-  color: var(--color-white);
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+    font: var(--text-body);
+    color: var(--color-white);
 }
 
 .resource-per-turn {
-  font-size: 0.6em;
-  vertical-align: text-top;
-  margin-top: calc(-1 * var(--spacing-xs));
+    font-size: 0.6em;
+    vertical-align: text-top;
+    margin-top: calc(-1 * var(--spacing-xs));
 }
 
 .menu-btn {
-  font: var(--text-body);
-  border: none;
-  background: transparent;
-  color: var(--color-white);
-  cursor: pointer;
-  transition: background 0.2s;
+    font: var(--text-body);
+    border: none;
+    background: transparent;
+    color: var(--color-white);
+    cursor: pointer;
+    transition: background 0.2s;
 }
 .menu-btn:hover,
 .menu-btn:focus {
-  color: var(--color-border);
+    color: var(--color-border);
 }

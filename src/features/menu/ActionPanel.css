@@ -1,21 +1,21 @@
 .action-panel {
-  position: fixed;
-  bottom: 20px;
-  right: 20px;
-  z-index: 1000;
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 1000;
 }
 
 .action-btn {
-  font: var(--text-button);
-  border: none;
-  background: var(--color-background-secondary);
-  color: var(--color-white);
-  cursor: pointer;
-  border-radius: var(--corner-radius);
-  padding: var(--spacing-s);
-  transition: background 0.2s;
+    font: var(--text-button);
+    border: none;
+    background: var(--color-background-secondary);
+    color: var(--color-white);
+    cursor: pointer;
+    border-radius: var(--corner-radius);
+    padding: var(--spacing-s);
+    transition: background 0.2s;
 }
 
 .action-btn:hover {
-  background: var(--color-border);
+    background: var(--color-border);
 }
