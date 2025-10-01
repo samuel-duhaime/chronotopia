@@ -10,14 +10,13 @@ import './App.css';
 
 // App component
 export const App = () => {
-    const gameRef = useRef<HTMLDivElement>(null);
+    const gameRef = useRef<HTMLDivElement>(null); // Reference to Phaser game container
+    const gameSceneRef = useRef<GameScene | null>(null); // Store GameScene instance
     const [loading, setLoading] = useState(true);
     const [game, setGame] = useState<ReturnType<GameScene['getGame']>>({} as ReturnType<GameScene['getGame']>);
-    const [currentActionEvent, setCurrentActionEvent] = useState<(() => void) | undefined>(undefined);
 
     useEffect(() => {
         let phaserGame: Phaser.Game | undefined;
-        let gameSceneInstance: GameScene | undefined;
 
         // Resize Phaser game when window size changes
         function resizeGame() {
@@ -48,24 +47,17 @@ export const App = () => {
 
             // When Phaser game is ready, get GameScene instance
             phaserGame.events.on('ready', () => {
-                gameSceneInstance = phaserGame?.scene.getScene('GameScene') as GameScene;
-                if (gameSceneInstance) {
-                    // Listen for any game state change (turn/resources/actions/players)
+                gameSceneRef.current = phaserGame?.scene.getScene('GameScene') as GameScene; // Assign instance to ref
+                if (gameSceneRef.current) {
+                    // Set initial state
                     const updateState = () => {
-                        if (gameSceneInstance != null) {
-                            // Passing the whole GameScene instance to React works because its properties are directly accessible
-                            // However, this is not recommended for React state, as class instances can cause subtle bugs
-                            // Using getGame() is safer and returns a plain JS object, which is more idiomatic for React
-                            // setGame(gameSceneInstance.getGame()); // Recommended
-                            // TODO: Works but not best practice
-                            setGame(gameSceneInstance);
-                            setCurrentActionEvent(gameSceneInstance.getCurrentAction()?.event);
+                        if (gameSceneRef.current != null) {
+                            setGame(gameSceneRef.current); // Use plain object because GameScene is not serializable
                         }
                     };
 
                     // Listen for any game state change (turn/resources/actions/players)
-                    gameSceneInstance.registry.events.on('changedata', updateState);
-
+                    gameSceneRef.current.registry.events.on('changedata', updateState);
                     updateState(); // Set initial state from GameScene
                     setLoading(false); // Scene is loaded
                 }
@@ -79,6 +71,14 @@ export const App = () => {
         };
     }, []);
 
+    // Use the correct event function for ActionPanel
+    const actionEvent = () => {
+        if (gameSceneRef.current) {
+            gameSceneRef.current.getCurrentAction()?.event();
+            setGame(gameSceneRef.current.getGame()); // Update React state current action event
+        }
+    };
+
     return (
         <>
             {/* Phaser game container */}
@@ -88,17 +88,13 @@ export const App = () => {
             ) : (
                 <>
                     {/* Top middle menu to display resources */}
-                    {/* console.log('game.resources:', game.resources)*/}
-                    <ResourcesMenu resources={game.resources} />
+                    <ResourcesMenu resources={game?.resources ?? []} />
 
                     {/* Right menu displays current turn */}
-                    <RightMenu turn={game.turn} />
+                    <RightMenu turn={game?.turn} />
 
-                    {/* ActionPanel uses first action from GameScene */}
-                    <ActionPanel
-                        actionDescription={game.actions?.[0]?.description}
-                        actionEvent={currentActionEvent ?? (() => {})}
-                    />
+                    {/* ActionPanel uses current action from GameScene */}
+                    <ActionPanel actionDescription={game?.actions?.[0]?.description} actionEvent={actionEvent} />
                 </>
             )}
         </>
