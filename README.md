@@ -8,6 +8,7 @@ Chronotopia is a 4X space deckbuilding game built with Phaser, TypeScript, Vite,
 
 - [Project Goal](#project-goal)
 - [MVP Roadmap](#mvp-roadmap)
+- [Planned Features](#planned-features)
 - [Core Mechanics](#core-mechanics)
 - [Tech Stack](#tech-stack)
 - [Getting Started](#getting-started)
@@ -21,16 +22,64 @@ The objective is to release Chronotopia on Steam.
 
 ## MVP Roadmap
 
-| Feature          | Status  |
-| :--------------- | :-----: |
-| Turn system      |  Done   |
-| Resources system |  Done   |
-| Map system       |  Done   |
-| Planet system    | Planned |
-| Research system  | Planned |
-| Fleet system     | Planned |
-| Setting system   | Planned |
-| Victory system   | Planned |
+| Feature           | Status  |
+| :---------------- | :-----: |
+| Turn system       |  Done   |
+| Resources system  |  Done   |
+| Map system        |  Done   |
+| Planet system     | Planned |
+| Research system   | Planned |
+| Fleet system      | Planned |
+| Victory system    | Planned |
+| Card system       | Planned |
+| Steam integration | Planned |
+
+## Planned Features
+
+- Extensive variety of card types, including fleets, buildings, technologies, events, commanders, items, and more
+- 5 victory conditions (scientific, military, economic, diplomatic, survival)
+- 3 factions with unique abilities and playstyles (Human, Ethyrian, Karnak)
+- Unique commanders with special skills and traits
+- Combat system (inspired by Heroes 3 Might & Magic)
+- New systems:
+    - Diplomacy (diplomatic relations, treaties, alliances)
+    - Trade (trade routes, trade agreements, unique trade goods)
+    - Tutorial
+    - Espionage
+    - Events
+    - Missions
+    - Politics (laws, elections, taxes, multiple systems: democracy, monarchy, technocracy, etc.)
+    - Neutral factions
+    - Items
+    - Skills
+    - Council
+    - Artifacts
+    - Achievements
+    - Galactic senate
+    - Ship customization (weapons, armor, engines, modules)
+    - Happiness
+    - Influence
+    - Time travel mechanics
+    - AI opponents (with different difficulty levels and personalities)
+    - Ascension mode and card upgrade system (inspired by Slay the Spire and Hades)
+    - etc.
+- New galactic elements:
+    - New planets
+    - New fleet
+    - Asteroids
+    - Fog of war
+    - Wormholes
+    - Anomalies
+    - Nebulae
+    - Space Stations
+    - Celestial Bodies
+    - Derelict Vessels
+    - Pirate Outposts
+    - Black holes
+    - Space monsters
+    - Space weather
+    - Stars
+    - etc.
 
 ## Core Mechanics
 
