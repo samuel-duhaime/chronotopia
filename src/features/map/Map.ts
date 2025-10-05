@@ -1,4 +1,7 @@
 import BoardPlugin from 'phaser3-rex-plugins/plugins/board-plugin';
+import { faRocket, faBurst } from '@fortawesome/free-solid-svg-icons';
+import { icon } from '@fortawesome/fontawesome-svg-core';
+import { GameScene } from '../game/GameScene';
 
 // TODO: Future: Asteroid, Wormhole, Star, BlackHole, Nebula, Debris, Building, Unit, Resource, Research, Item, Event, Shipyard, Starbase, Colony, TradeRoute, Anomaly, Artifact, Outpost, Mine
 export type Element = 'Empty' | 'Planet' | 'Fleet';
@@ -11,7 +14,7 @@ export type MapHex = {
 export type MainCamera = Phaser.Cameras.Scene2D.Camera;
 export class Map {
     hexes: MapHex[];
-    scene: Phaser.Scene;
+    scene: GameScene;
     rexBoard?: BoardPlugin;
     add: Phaser.GameObjects.GameObjectFactory;
     activeText: Phaser.GameObjects.Text;
@@ -19,7 +22,7 @@ export class Map {
     board: BoardPlugin.Board | undefined;
     activeHex: MapHex | null = null;
 
-    constructor(scene: Phaser.Scene) {
+    constructor(scene: GameScene) {
         this.scene = scene;
         this.hexes = [];
         this.add = scene.add;
@@ -48,7 +51,7 @@ export class Map {
     generateHexagonalMap() {
         this.rexBoard = this.scene.rexBoard;
         this.cameras = this.scene.cameras?.main;
-        const hexSize = 50;
+        const hexSize = 80;
         const board = this.rexBoard?.add?.board({
             grid: {
                 gridType: 'hexagonGrid',
@@ -128,29 +131,61 @@ export class Map {
             const worldXY = this.board?.tileXYToWorldXY(hex.x, hex.y);
             if (!worldXY) return; // Safety check
             for (const el of hex.elements) {
-                const labelY = worldXY.y - 40;
+                const labelY = worldXY.y - 55;
                 if (el.element === 'Planet') {
-                    const label = this.add
-                        ?.text(worldXY.x, labelY, 'Planet', {
-                            fontSize: '16px',
-                            backgroundColor: '#0055ff',
-                            color: '#ffffff',
-                            fontStyle: 'bold',
-                            padding: { x: 5, y: 5 }
-                        })
-                        .setOrigin(0.5);
+                    const labelDiv = document.createElement('div');
+                    labelDiv.innerText = 'Earth';
+                    labelDiv.className = 'map-label';
+                    const label = this.add?.dom(worldXY.x, labelY, labelDiv).setOrigin(0.5);
                     this.scene.children.bringToTop(label);
                 }
                 if (el.element === 'Fleet') {
-                    const label = this.add
-                        ?.text(worldXY.x, labelY, 'Fleet', {
-                            fontSize: '16px',
-                            backgroundColor: '#ffaa00',
-                            color: '#000000',
-                            fontStyle: 'bold',
-                            padding: { x: 5, y: 5 }
-                        })
-                        .setOrigin(0.5);
+                    // Fleet label
+                    const parentDiv = document.createElement('div');
+                    parentDiv.className = 'map-label';
+
+                    // Fleet icon and name
+                    const fleetDiv = document.createElement('span');
+                    fleetDiv.className = 'fleet-info';
+                    const rocketSvg = icon(faRocket).node[0];
+                    fleetDiv.appendChild(rocketSvg);
+
+                    // Get fleet name and power from scene's fleets
+                    let fleetNameText = 'Fleet';
+                    let fleetPowerValue = '1';
+                    // FIXME: This fleets doesn't work on the first render for some reason
+                    const fleets = this.scene.getFleets();
+                    if (fleets && fleets.length > 0 && fleets[0].commander) {
+                        if (fleets[0].commander.name) {
+                            fleetNameText = fleets[0].commander.name;
+                        }
+                        if (typeof fleets[0].commander.power === 'number') {
+                            fleetPowerValue = fleets[0].commander.power.toString();
+                        }
+                    }
+
+                    // Fleet name
+                    const fleetName = document.createElement('span');
+                    fleetName.innerText = fleetNameText;
+                    fleetName.className = 'fleet-name';
+                    fleetDiv.appendChild(fleetName);
+
+                    // Burst icon and power
+                    const burstDiv = document.createElement('span');
+                    burstDiv.className = 'fleet-power';
+                    const planetSvg = icon(faBurst).node[0];
+                    burstDiv.appendChild(planetSvg);
+                    const powerValue = document.createElement('span');
+                    powerValue.innerText = fleetPowerValue;
+                    powerValue.className = 'power-value';
+                    burstDiv.appendChild(powerValue);
+
+                    // Append all to parent div
+                    parentDiv.appendChild(fleetDiv);
+                    parentDiv.appendChild(burstDiv);
+
+                    // Add to Phaser DOM element
+                    const label = this.add?.dom(worldXY.x, labelY, parentDiv).setOrigin(0.5);
                     this.scene.children.bringToTop(label);
                 }
                 // You can add more labels for other elements here if needed
@@ -193,7 +228,7 @@ export class Map {
         if (this.activeHex) {
             this.activeText?.destroy(); // Remove previous active text
             this.activeText = this.add
-                ?.text(-50, -80, `Active: ${this.activeHex.x},${this.activeHex.y}`, {
+                ?.text(-80, -120, `Active: ${this.activeHex.x},${this.activeHex.y}`, {
                     fontSize: '20px',
                     color: '#00ff00',
                     fontStyle: 'bold'

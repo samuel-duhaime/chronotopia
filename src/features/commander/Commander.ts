@@ -8,7 +8,7 @@ export type CommanderName =
     | 'Overseer Zenith';
 
 export type CommanderInfo = {
-    commanderName: CommanderName;
+    name: CommanderName;
     description: string;
     faction: Faction;
     specie: Specie;
@@ -18,35 +18,35 @@ export type CommanderInfo = {
 // Data for commanders infos.
 export const CommanderInfos: Record<CommanderName, CommanderInfo> = {
     'Admiral Kryos Vantrel': {
-        commanderName: 'Admiral Kryos Vantrel',
+        name: 'Admiral Kryos Vantrel',
         description: 'A seasoned tactician known for his icy resolve and strategic brilliance.',
         faction: 'Human',
         specie: 'Human',
         image: 'kryos_vantrel.png'
     },
     'Captain Zara Thorne': {
-        commanderName: 'Captain Zara Thorne',
+        name: 'Captain Zara Thorne',
         description: 'A daring explorer with a reputation for bold maneuvers and quick thinking.',
         faction: 'Human',
         specie: 'Human',
         image: 'zara_thorne.png'
     },
     'Overseer Zenith': {
-        commanderName: 'Overseer Zenith',
+        name: 'Overseer Zenith',
         description: 'A mysterious leader rumored to be part machine, part alien.',
         faction: 'Human',
         specie: 'Cyborg',
         image: 'overseer_zenith.png'
     },
     'Commander Raxus Vel': {
-        commanderName: 'Commander Raxus Vel',
+        name: 'Commander Raxus Vel',
         description: 'A fierce Ethyrian warrior, master of alien technology and tactics.',
         faction: 'Ethyrian',
         specie: 'Ethyrian',
         image: 'raxus_vel.png'
     },
     'Queen Veyra Khar': {
-        commanderName: 'Queen Veyra Khar',
+        name: 'Queen Veyra Khar',
         description:
             'The ruthless military Queen of the Karnak, feared for her cunning, brutality, and relentless command.',
         faction: 'Karnak',
@@ -55,33 +55,49 @@ export const CommanderInfos: Record<CommanderName, CommanderInfo> = {
     }
 };
 
+export type CommanderOptions = {
+    id: string;
+    name: CommanderName;
+    power?: number;
+    items?: unknown[];
+    units?: Unit[];
+    cards?: unknown[];
+};
+
 export class Commander {
     id: string;
-    info: CommanderInfo;
-    level: number = 1;
-    experience: number = 0;
+    name: CommanderName;
+    description: string;
+    faction: Faction;
+    specie: Specie;
+    image: string;
+    level: number;
+    experience: number;
+    power: number;
     items: unknown[] = [];
     units: Unit[] = [];
     cards: unknown[] = [];
 
-    constructor(
-        id: string = 'commander-1',
-        commanderName: CommanderName = 'Admiral Kryos Vantrel',
-        items: unknown[] = [],
-        units: Unit[] = [],
-        cards: unknown[] = []
-    ) {
-        this.id = id;
-        this.info = CommanderInfos[commanderName];
-        this.items = items;
-        this.units = units;
-        this.cards = cards;
+    constructor(options: CommanderOptions) {
+        this.id = options.id ?? 'commander-1';
+        const name = options.name ?? 'Admiral Kryos Vantrel';
+        const info = CommanderInfos[name];
+        this.name = info.name;
+        this.description = info.description;
+        this.faction = info.faction;
+        this.specie = info.specie;
+        this.image = info.image;
+        this.power = 10;
+        this.level = 1;
+        this.experience = 0;
+        this.items = options.items ?? [];
+        this.units = options.units ?? [];
+        this.cards = options.cards ?? [];
     }
 
-    // Method to change the commander name while preserving other attributes.
+    // Rename the commander
     renameCommander(newName: CommanderName) {
-        this.info = CommanderInfos[newName];
-        this.info.commanderName = newName;
+        this.name = newName;
     }
 }
 
@@ -144,6 +160,10 @@ export class Unit {
 
     // Calculate power using weighted formula for health and damage.
     calculatePower(): number {
-        return (this.health * 0.8 * this.damage * 1 + this.initiative * this.damage * 0.5) * this.quantity;
+        const healthWeight = 0.8;
+        const damageWeight = 1;
+        const initiativeWeight = 0.5;
+
+        return (this.health * healthWeight * this.damage * damageWeight + this.initiative * this.damage * initiativeWeight) * this.quantity;
     }
 }

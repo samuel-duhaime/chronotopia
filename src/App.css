@@ -10,3 +10,26 @@ body,
     height: 100vh;
     box-sizing: border-box;
 }
+
+/* Map label (Fleet, Planet, etc.) */
+.map-label {
+    background: var(--color-background-secondary);
+    color: var(--color-white);
+    font: var(--text-small);
+    padding: var(--spacing-s);
+    border-radius: var(--corner-radius);
+    border: 1px solid var(--color-border);
+    cursor: pointer;
+}
+.map-label:hover {
+    background: var(--color-border);
+}
+
+/* Fleet label */
+.fleet-power {
+    margin-left: var(--spacing-m);
+}
+.fleet-name,
+.power-value {
+    margin-left: var(--spacing-xs);
+}
