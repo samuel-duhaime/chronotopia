@@ -34,6 +34,7 @@ export const App = () => {
                 height: gameRef.current.offsetHeight,
                 parent: gameRef.current,
                 scene: GameScene,
+                dom: { createContainer: true },
                 plugins: {
                     scene: [
                         {

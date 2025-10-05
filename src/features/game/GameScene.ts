@@ -2,6 +2,7 @@ import Phaser from 'phaser';
 import { faBitcoin } from '@fortawesome/free-brands-svg-icons';
 import { faGlobe, faFlask, faSmile, faEarth, faRocket } from '@fortawesome/free-solid-svg-icons';
 import { Map } from '../map/Map';
+import { Fleet } from '../fleet/Fleet';
 
 export type Player = {
     id: string;
@@ -12,7 +13,7 @@ export type Action = {
     id: string;
     description: string;
     event: () => void;
-    // ...other action properties
+    isActive: boolean;
 };
 export type CryptoResource = {
     type: 'Crypto';
@@ -66,7 +67,9 @@ export type GameSceneProps = {
     type: GameTypeProps;
     turn: number;
     actions: Action[];
+    map: Map | undefined;
     players?: Player[];
+    fleets: Fleet[];
     resources: Resource[];
 };
 
@@ -78,6 +81,7 @@ export class GameScene extends Phaser.Scene {
     actions: Action[];
     map: Map | undefined;
     players: Player[];
+    fleets: Fleet[];
     resources: Resource[];
     controls: Phaser.Cameras.Controls.SmoothedKeyControl | undefined;
     cursors: Phaser.Types.Input.Keyboard.CursorKeys | undefined;
@@ -93,12 +97,20 @@ export class GameScene extends Phaser.Scene {
         this.actions = [
             {
                 id: '1',
+                description: 'Command',
+                event: () => this.setNextActionActive(),
+                isActive: true
+            },
+            {
+                id: '2',
                 description: 'Next Turn',
-                event: () => this.nextTurn()
+                event: () => this.nextTurn(),
+                isActive: false
             }
         ];
-        this.players = [];
         this.map = undefined; // Will be initialized in create()
+        this.players = [];
+        this.fleets = [new Fleet()];
         this.resources = [
             { type: 'Crypto', amount: 0, perTurn: 1, icon: faBitcoin },
             { type: 'Influence', amount: 0, perTurn: 1, icon: faGlobe },
@@ -127,6 +139,7 @@ export class GameScene extends Phaser.Scene {
         this.registry.set('turn', this.turn);
         this.registry.set('actions', this.actions);
         this.registry.set('players', this.players);
+        this.registry.set('fleets', this.fleets);
         this.registry.set('resources', this.resources);
 
         // Camera controls
@@ -209,7 +222,9 @@ export class GameScene extends Phaser.Scene {
             type: this.getType(),
             turn: this.getTurn(),
             actions: this.getActions(),
+            map: this.map,
             players: this.getPlayers(),
+            fleets: this.fleets,
             resources: this.getResources()
         };
     }
@@ -268,13 +283,43 @@ export class GameScene extends Phaser.Scene {
         return this.registry.get('actions') as Action[];
     }
     getCurrentAction() {
-        // console.log('Getting current action');
         const actions = this.getActions();
         return Array.isArray(actions) && actions.length > 0 ? actions[0] : null;
     }
     addAction(action: Action) {
         const actions = this.registry.get('actions') as Action[];
         this.registry.set('actions', [...actions, action]);
+    }
+    setNextActionActive() {
+        const actions = this.getActions();
+
+        const currentAction = this.getCurrentAction();
+        const currentIndex = actions.findIndex((action) => action.id === currentAction?.id);
+
+        // If somehow not found, just activate the first action
+        if (currentIndex === -1) {
+            actions.forEach((action, index) => (action.isActive = index === 0));
+            this.registry.set('actions', actions);
+            return;
+        }
+
+        // Deactivate current action
+        actions[currentIndex].isActive = false;
+
+        // Activate next action (loop to start if at end)
+        const nextIndex = (currentIndex + 1) % actions.length;
+        actions[nextIndex].isActive = true;
+
+        // Update actions in registry
+        this.registry.set('actions', actions);
+    }
+
+    // Game map
+    getMap() {
+        return this.registry.get('map') as Map;
+    }
+    setMap(map: Map) {
+        this.registry.set('map', map);
     }
 
     // Game players
@@ -284,6 +329,15 @@ export class GameScene extends Phaser.Scene {
     addPlayer(player: Player) {
         const players = this.registry.get('players') as Player[];
         this.registry.set('players', [...players, player]);
+    }
+
+    // Game fleets
+    getFleets() {
+        return this.registry.get('fleets') as Fleet[];
+    }
+    addFleet(fleet: Fleet) {
+        const fleets = this.registry.get('fleets') as Fleet[];
+        this.registry.set('fleets', [...fleets, fleet]);
     }
 
     // Game resources

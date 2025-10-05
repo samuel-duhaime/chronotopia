@@ -1,9 +1,11 @@
+import { GameScene, type GameSceneProps, type Player, type Action, type Resource } from './GameScene';
+import { Fleet } from '../fleet/Fleet';
+import { Map } from '../map/Map';
+
 // Mock Phaser to avoid jsdom/canvas errors
 jest.mock('phaser', () => ({
     Scene: class {}
 }));
-
-import { GameScene, type GameSceneProps, type Player, type Action, type Resource } from './GameScene';
 
 describe('GameScene Unit Tests', () => {
     beforeEach(() => {
@@ -51,7 +53,9 @@ describe('GameScene Unit Tests', () => {
             type: 'Skirmish' as GameScene['type'],
             turn: 5,
             actions: [{ id: 'a1', description: 'Action', event: () => {} }],
+            map: new Map(scene),
             players: [{ id: 'p2', name: 'Bob' }],
+            fleets: [new Fleet()],
             resources: [
                 {
                     type: 'Crypto',
@@ -99,7 +103,9 @@ describe('GameScene Unit Tests', () => {
         expect(scene.getType()).toBe('Skirmish');
         expect(scene.getTurn()).toBe(5);
         expect(scene.getActions()).toEqual(newGame.actions);
+        expect(scene.getMap()).toEqual(newGame.map);
         expect(scene.getPlayers()).toEqual(newGame.players);
+        expect(scene.getFleets()).toEqual(newGame.fleets);
         expect(scene.getResources()).toEqual(newGame.resources);
     });
 
