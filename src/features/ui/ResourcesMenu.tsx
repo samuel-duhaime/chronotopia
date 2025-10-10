@@ -1,13 +1,11 @@
 import React from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import type { Resource } from '../game/GameScene';
+import { useGameStore } from '../game/gameStore';
 import './Menu.css';
 
-interface ResourcesMenuProps {
-    resources: Resource[];
-}
+export const ResourcesMenu: React.FC = () => {
+    const resources = useGameStore((state) => state.resources);
 
-export const ResourcesMenu: React.FC<ResourcesMenuProps> = ({ resources }) => {
     return (
         <div className="menu resources-menu-panel">
             {resources.map((resource) => (

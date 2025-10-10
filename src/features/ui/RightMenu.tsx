@@ -1,14 +1,12 @@
 import React from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faClock, faGear } from '@fortawesome/free-solid-svg-icons';
+import { useGameStore } from '../game/gameStore';
 import './Menu.css';
 
-interface RightMenuProps {
-    turn: number;
-}
+export const RightMenu: React.FC = () => {
+    const turn = useGameStore((state) => state.turn);
 
-// TODO: Add turn icon
-export const RightMenu: React.FC<RightMenuProps> = ({ turn }) => {
     return (
         <div className="menu right-menu-panel">
             <div className="menu-resource">

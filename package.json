@@ -19,7 +19,8 @@
         "phaser": "^3.90.0",
         "phaser3-rex-plugins": "^1.80.16",
         "react": "^19.1.1",
-        "react-dom": "^19.1.1"
+        "react-dom": "^19.1.1",
+        "zustand": "^5.0.8"
     },
     "devDependencies": {
         "@eslint/js": "^9.33.0",

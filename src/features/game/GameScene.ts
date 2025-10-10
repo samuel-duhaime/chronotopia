@@ -1,124 +1,19 @@
 import Phaser from 'phaser';
-import { faBitcoin } from '@fortawesome/free-brands-svg-icons';
-import { faGlobe, faFlask, faSmile, faEarth, faRocket } from '@fortawesome/free-solid-svg-icons';
-import { Map } from '../map/Map';
-import { Fleet } from '../fleet/Fleet';
-
-export type Player = {
-    id: string;
-    name: string;
-    // ...other player properties
-};
-export type Action = {
-    id: string;
-    description: string;
-    event: () => void;
-    isActive: boolean;
-};
-export type CryptoResource = {
-    type: 'Crypto';
-    amount: number;
-    perTurn: number;
-    icon: typeof faBitcoin;
-};
-export type InfluenceResource = {
-    type: 'Influence';
-    amount: number;
-    perTurn: number;
-    icon: typeof faGlobe;
-};
-export type ScienceResource = {
-    type: 'Science';
-    amount: number;
-    perTurn: number;
-    threshold: number;
-    icon: typeof faFlask;
-};
-export type HappinessResource = {
-    type: 'Happiness';
-    amount: number;
-    perTurn: number;
-    threshold: number;
-    icon: typeof faSmile;
-};
-export type PlanetsCapacityResource = {
-    type: 'PlanetsCapacity';
-    amount: number;
-    maxCapacity: number;
-    icon: typeof faEarth;
-};
-export type FleetCapacityResource = {
-    type: 'FleetCapacity';
-    amount: number;
-    maxCapacity: number;
-    icon: typeof faRocket;
-};
-export type Resource =
-    | CryptoResource
-    | InfluenceResource
-    | ScienceResource
-    | HappinessResource
-    | PlanetsCapacityResource
-    | FleetCapacityResource;
-export type GameTypeProps = 'Demo' | 'Normal' | 'Campaign' | 'Skirmish';
-export type GameSceneProps = {
-    id: string;
-    name: string;
-    type: GameTypeProps;
-    turn: number;
-    actions: Action[];
-    map: Map | undefined;
-    players?: Player[];
-    fleets: Fleet[];
-    resources: Resource[];
-};
+import BoardPlugin from 'phaser3-rex-plugins/plugins/board-plugin';
+import { faRocket, faBurst } from '@fortawesome/free-solid-svg-icons';
+import { icon } from '@fortawesome/fontawesome-svg-core';
+import { useGameStore } from './gameStore';
+import type { MapHex } from '../map/mapStore';
 
 export class GameScene extends Phaser.Scene {
-    id: string;
-    name: string;
-    type: GameTypeProps;
-    turn: number;
-    actions: Action[];
-    map: Map | undefined;
-    players: Player[];
-    fleets: Fleet[];
-    resources: Resource[];
+    board: BoardPlugin.Board | undefined;
+    activeText: Phaser.GameObjects.Text | undefined;
     controls: Phaser.Cameras.Controls.SmoothedKeyControl | undefined;
     cursors: Phaser.Types.Input.Keyboard.CursorKeys | undefined;
 
     // This constructor initializes the game scene
     constructor() {
-        // console.log('GameScene constructor');
         super({ key: 'GameScene' });
-        this.id = '1';
-        this.name = 'Demo Game';
-        this.type = 'Demo';
-        this.turn = 1;
-        this.actions = [
-            {
-                id: '1',
-                description: 'Command',
-                event: () => this.setNextActionActive(),
-                isActive: true
-            },
-            {
-                id: '2',
-                description: 'Next Turn',
-                event: () => this.nextTurn(),
-                isActive: false
-            }
-        ];
-        this.map = undefined; // Will be initialized in create()
-        this.players = [];
-        this.fleets = [new Fleet()];
-        this.resources = [
-            { type: 'Crypto', amount: 0, perTurn: 1, icon: faBitcoin },
-            { type: 'Influence', amount: 0, perTurn: 1, icon: faGlobe },
-            { type: 'Science', amount: 0, perTurn: 1, threshold: 25, icon: faFlask },
-            { type: 'Happiness', amount: 0, perTurn: 1, threshold: 100, icon: faSmile },
-            { type: 'PlanetsCapacity', amount: 1, maxCapacity: 2, icon: faEarth },
-            { type: 'FleetCapacity', amount: 1, maxCapacity: 2, icon: faRocket }
-        ];
     }
 
     preload() {
@@ -128,19 +23,11 @@ export class GameScene extends Phaser.Scene {
     }
 
     create() {
-        this.map = new Map(this);
-        this.map.generateHexagonalMap();
+        // Initialize map data in the store
+        useGameStore.getState().initializeMap();
 
-        // Initialize registry values
-        this.registry.set('map', this.map);
-        this.registry.set('id', this.id);
-        this.registry.set('name', this.name);
-        this.registry.set('type', this.type);
-        this.registry.set('turn', this.turn);
-        this.registry.set('actions', this.actions);
-        this.registry.set('players', this.players);
-        this.registry.set('fleets', this.fleets);
-        this.registry.set('resources', this.resources);
+        // Generate hexagonal map directly
+        this.generateHexagonalMap();
 
         // Camera controls
         if (this.input?.keyboard) {
@@ -211,167 +98,190 @@ export class GameScene extends Phaser.Scene {
         }
     }
 
-    /**
-     * Returns all main game properties as an object for easy destructuring.
-     * @returns {GameSceneProps}
-     */
-    getGame(): GameSceneProps {
-        return {
-            id: this.getId(),
-            name: this.getName(),
-            type: this.getType(),
-            turn: this.getTurn(),
-            actions: this.getActions(),
-            map: this.map,
-            players: this.getPlayers(),
-            fleets: this.fleets,
-            resources: this.getResources()
+    // Generates a hexagonal map
+    generateHexagonalMap = () => {
+        const rexBoard = this.rexBoard || (this.plugins.get('rexBoard') as BoardPlugin);
+        const hexSize = 80;
+        const board = rexBoard?.add?.board({
+            grid: {
+                gridType: 'hexagonGrid',
+                x: 0,
+                y: 0,
+                size: hexSize,
+                staggeraxis: 'y',
+                staggerindex: 'odd'
+            }
+        });
+        this.board = board;
+
+        // Create tiles from hexes in store
+        const hexes = useGameStore.getState().hexes;
+        const tileList = hexes.map(({ x, y }) => ({ x, y }));
+
+        // Draw visible hexagon shapes for each tile and set them interactive
+        hexes.forEach((hex) => {
+            // Get the world coordinates for this hex tile
+            const worldXY = board?.tileXYToWorldXY(hex.x, hex.y);
+            // Create a graphics object at the tile's position
+            const graphics = this.add?.graphics({ x: worldXY.x, y: worldXY.y });
+            // Draw the hex border using line style
+            graphics?.lineStyle(2, 0xffffff, 1);
+            // Get the points for the hexagon shape
+            const points = board?.getGridPoints(hex.x, hex.y, true);
+            // Draw the hexagon border, centering it at (0,0) relative to graphics
+            graphics?.strokePoints(
+                points.map((p) => ({ x: p.x - worldXY.x, y: p.y - worldXY.y })),
+                true
+            );
+            // Set the graphics object as interactive using a polygon matching the hex shape
+            graphics?.setInteractive(
+                new Phaser.Geom.Polygon(points.map((p) => ({ x: p.x - worldXY.x, y: p.y - worldXY.y }))),
+                Phaser.Geom.Polygon.Contains
+            );
+            // Listen for pointerdown events on this hex tile
+            graphics?.on('pointerdown', () => {
+                // Update active hex in store and redraw the map
+                useGameStore.getState().setActiveHex({ x: hex.x, y: hex.y });
+                this.drawHexMap();
+            });
+        });
+
+        // Draws the hex map, highlighting the active tile
+        this.drawHexMap();
+
+        // Center camera on the middle of the map
+        if (tileList?.length > 0) {
+            const mid = Math.floor(tileList.length / 2);
+            const center = board?.tileXYToWorldXY(tileList[mid].x, tileList[mid].y);
+            this.cameras?.main?.centerOn(center.x, center.y);
+        }
+    };
+
+    // Draws the hex map, highlighting the active tile
+    drawHexMap = () => {
+        // Draw tile content element inside the hex
+        const drawTileContent = ({ hex }: { hex: MapHex }) => {
+            const worldXY = this.board?.tileXYToWorldXY(hex.x, hex.y);
+            if (!worldXY) return; // Safety check
+            for (const el of hex.elements) {
+                if (el.element === 'Planet') {
+                    this.add?.image(worldXY.x, worldXY.y, 'planetEarth').setOrigin(0.5).setDisplaySize(50, 50);
+                } else if (el.element === 'Fleet') {
+                    this.add?.image(worldXY.x, worldXY.y, 'fleet').setOrigin(0.5).setDisplaySize(30, 30);
+                } else {
+                    this.add?.text(worldXY.x, worldXY.y, `${hex.x},${hex.y}`).setOrigin(0.5);
+                }
+            }
         };
-    }
 
-    /**
-     * Sets all main game properties from a GameSceneProps object.
-     */
-    setGame(game: GameSceneProps) {
-        this.setId(game.id);
-        this.setName(game.name);
-        this.setType(game.type);
-        this.setTurn(game.turn);
-        this.setResources(game.resources);
-        this.registry.set('actions', game.actions);
-        this.registry.set('players', game.players ?? []);
-    }
+        // Draw labels for elements
+        const drawTileLabel = ({ hex }: { hex: MapHex }) => {
+            const worldXY = this.board?.tileXYToWorldXY(hex.x, hex.y);
+            if (!worldXY) return; // Safety check
+            for (const el of hex.elements) {
+                const labelY = worldXY.y - 55;
+                if (el.element === 'Planet') {
+                    const labelDiv = document.createElement('div');
+                    labelDiv.innerText = 'Earth';
+                    labelDiv.className = 'map-label';
+                    const label = this.add?.dom(worldXY.x, labelY, labelDiv).setOrigin(0.5);
+                    this.children.bringToTop(label);
+                }
+                if (el.element === 'Fleet') {
+                    // Fleet label
+                    const parentDiv = document.createElement('div');
+                    parentDiv.className = 'map-label';
 
-    // Game ID
-    getId() {
-        return this.registry.get('id') as string;
-    }
-    setId(id: string) {
-        this.registry.set('id', id);
-    }
+                    // Fleet icon and name
+                    const fleetDiv = document.createElement('span');
+                    fleetDiv.className = 'fleet-info';
+                    const rocketSvg = icon(faRocket).node[0];
+                    fleetDiv.appendChild(rocketSvg);
 
-    // Game name
-    getName() {
-        return this.registry.get('name') as string;
-    }
-    setName(name: string) {
-        this.registry.set('name', name);
-    }
+                    // Get the fleet-1 from the store
+                    const fleet = useGameStore.getState().getFleetWithCommander({ fleetId: 'fleet-1' });
 
-    // Game type
-    getType() {
-        return this.registry.get('type') as GameTypeProps;
-    }
-    setType(type: GameTypeProps) {
-        this.registry.set('type', type);
-    }
+                    // Fleet name
+                    const fleetName = document.createElement('span');
+                    fleetName.innerText = fleet.commander.name;
+                    fleetName.className = 'fleet-name';
+                    fleetDiv.appendChild(fleetName);
 
-    // Game turn
-    getTurn() {
-        return this.registry.get('turn') as number;
-    }
-    setTurn(turn: number) {
-        this.registry.set('turn', turn);
-    }
-    nextTurn() {
-        this.updateResourcesNextTurn();
-        this.setTurn(this.getTurn() + 1);
-    }
+                    // Burst icon and power
+                    const burstDiv = document.createElement('span');
+                    burstDiv.className = 'fleet-power';
+                    const planetSvg = icon(faBurst).node[0];
+                    burstDiv.appendChild(planetSvg);
+                    const powerValue = document.createElement('span');
+                    powerValue.innerText = fleet.commander.power.toString();
+                    powerValue.className = 'power-value';
+                    burstDiv.appendChild(powerValue);
 
-    // Game actions
-    getActions() {
-        return this.registry.get('actions') as Action[];
-    }
-    getCurrentAction() {
-        const actions = this.getActions();
-        return Array.isArray(actions) && actions.length > 0 ? actions[0] : null;
-    }
-    addAction(action: Action) {
-        const actions = this.registry.get('actions') as Action[];
-        this.registry.set('actions', [...actions, action]);
-    }
-    setNextActionActive() {
-        const actions = this.getActions();
+                    // Append all to parent div
+                    parentDiv.appendChild(fleetDiv);
+                    parentDiv.appendChild(burstDiv);
 
-        const currentAction = this.getCurrentAction();
-        const currentIndex = actions.findIndex((action) => action.id === currentAction?.id);
+                    // Add to Phaser DOM element
+                    const label = this.add?.dom(worldXY.x, labelY, parentDiv).setOrigin(0.5);
+                    this.children.bringToTop(label);
+                }
+            }
+        };
 
-        // If somehow not found, just activate the first action
-        if (currentIndex === -1) {
-            actions.forEach((action, index) => (action.isActive = index === 0));
-            this.registry.set('actions', actions);
-            return;
+        // Draw hex border
+        const drawTileBorder = ({ hex, color }: { hex: MapHex; color: number }) => {
+            const graphics = this.add?.graphics({
+                lineStyle: {
+                    width: 2,
+                    color,
+                    alpha: 1
+                }
+            });
+            const points = this.board?.getGridPoints(hex.x, hex.y, true);
+            if (points) {
+                graphics?.strokePoints(points, true);
+            }
+        };
+
+        // Get hexes and activeHex from store
+        const { hexes, activeHex } = useGameStore.getState();
+
+        // Draw all hex borders (active last for green border)
+        for (const hex of hexes) {
+            if (hex === activeHex) continue; // Skip active hex for now
+            drawTileBorder({ hex, color: 0xffffff });
+        }
+        if (activeHex) {
+            drawTileBorder({ hex: activeHex, color: 0x00ff00 });
         }
 
-        // Deactivate current action
-        actions[currentIndex].isActive = false;
+        // Draw all hex contents
+        for (const hex of hexes) {
+            drawTileContent({ hex });
+        }
 
-        // Activate next action (loop to start if at end)
-        const nextIndex = (currentIndex + 1) % actions.length;
-        actions[nextIndex].isActive = true;
+        // Draw all hex labels (always on top)
+        for (const hex of hexes) {
+            drawTileLabel({ hex });
+        }
 
-        // Update actions in registry
-        this.registry.set('actions', actions);
-    }
+        // Draw active text at top left
+        if (activeHex) {
+            this.activeText?.destroy(); // Remove previous active text
+            this.activeText = this.add
+                ?.text(-80, -120, `Active: ${activeHex.x},${activeHex.y}`, {
+                    fontSize: '20px',
+                    color: '#00ff00',
+                    fontStyle: 'bold'
+                })
+                .setOrigin(0, 0);
+        }
+    };
+}
 
-    // Game map
-    getMap() {
-        return this.registry.get('map') as Map;
-    }
-    setMap(map: Map) {
-        this.registry.set('map', map);
-    }
-
-    // Game players
-    getPlayers() {
-        return this.registry.get('players') as Player[];
-    }
-    addPlayer(player: Player) {
-        const players = this.registry.get('players') as Player[];
-        this.registry.set('players', [...players, player]);
-    }
-
-    // Game fleets
-    getFleets() {
-        return this.registry.get('fleets') as Fleet[];
-    }
-    addFleet(fleet: Fleet) {
-        const fleets = this.registry.get('fleets') as Fleet[];
-        this.registry.set('fleets', [...fleets, fleet]);
-    }
-
-    // Game resources
-    getResources() {
-        return this.registry.get('resources') as Resource[];
-    }
-    setResources(resources: Resource[]) {
-        this.registry.set('resources', resources);
-    }
-    /**
-     * Updates all resources by their perTurn value at each next turn.
-     * Handles threshold logic for applicable resources.
-     */
-    updateResourcesNextTurn() {
-        // console.log('Updating resources for next turn');
-        const resources = this.getResources().map((resource) => {
-            if ('perTurn' in resource) {
-                let newAmount = resource.amount + resource.perTurn;
-
-                // Check if newAmount meets or exceeds the threshold
-                if ('threshold' in resource && typeof resource.threshold === 'number') {
-                    if (newAmount >= resource.threshold) {
-                        // TODO: Trigger special event or bonus for reaching threshold
-                        console.log(`Threshold reached for ${resource.type}: ${resource.threshold}`);
-                        newAmount -= resource.threshold;
-                    }
-                }
-                return {
-                    ...resource,
-                    amount: newAmount
-                };
-            }
-            return resource;
-        });
-        this.setResources(resources);
+// Extend Phaser's Scene interface to include rexBoard
+declare module 'phaser' {
+    interface Scene {
+        rexBoard: BoardPlugin;
     }
 }
