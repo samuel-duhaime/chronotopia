@@ -19,7 +19,7 @@ export type FleetStore = {
 };
 
 // Create a store for fleet management that includes commander management
-export const createFleetStore: StateCreator<FleetStore & CommanderStore, [], [], FleetStore> = (set, get) => ({
+export const createFleetStore: StateCreator<FleetStore & CommanderStore, [], [], FleetStore> = (_set, get) => ({
     fleets: [
         {
             id: 'fleet-1',
