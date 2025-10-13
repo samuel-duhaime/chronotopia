@@ -23,7 +23,7 @@ export const calculateHexRotation = ({
     const deltaX = toX - fromX;
     const deltaY = toY - fromY;
     const isEvenColumn = fromX % 2 === 0;
-    let rotation = 0;
+    let rotation = null;
 
     // For odd-q vertical layout, calculate angle based on columns
     if (isEvenColumn) {
@@ -42,6 +42,10 @@ export const calculateHexRotation = ({
         if (deltaX === 0 && deltaY === 1) rotation = 180; // South
         if (deltaX === -1 && deltaY === 1) rotation = 240; // South-West
         if (deltaX === -1 && deltaY === 0) rotation = 300; // North-West
+    }
+
+    if (rotation === null) {
+        throw new Error(`Invalid hex movement from (${fromX}, ${fromY}) to (${toX}, ${toY})`);
     }
 
     return rotation;

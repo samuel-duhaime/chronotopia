@@ -7,6 +7,8 @@ import type { MapHex } from '../map/mapStore';
 import { calculateHexRotation, calculateShortestRotation } from '../map/hexUtils';
 
 export class GameScene extends Phaser.Scene {
+    private static readonly LABEL_OFFSET_Y = 55; // Vertical offset for fleet label
+
     board: BoardPlugin.Board | undefined;
     activeText: Phaser.GameObjects.Text | undefined;
     controls: Phaser.Cameras.Controls.SmoothedKeyControl | undefined;
@@ -188,12 +190,14 @@ export class GameScene extends Phaser.Scene {
                         }
                     }
 
+                    const POSITION_TOLERANCE = 5; // Tolerance for position matching
+
                     // Check if child is a DOMElement and matches fleet label position
                     if (child.type === 'DOMElement') {
                         const domElement = child as Phaser.GameObjects.DOMElement;
                         if (
-                            Math.abs(domElement.x - fromWorldXY.x) < 5 &&
-                            Math.abs(domElement.y - (fromWorldXY.y - 55)) < 5
+                            Math.abs(domElement.x - fromWorldXY.x) < POSITION_TOLERANCE &&
+                            Math.abs(domElement.y - (fromWorldXY.y - GameScene.LABEL_OFFSET_Y)) < POSITION_TOLERANCE
                         ) {
                             fleetLabel = domElement;
                         }
@@ -265,7 +269,7 @@ export class GameScene extends Phaser.Scene {
                     this.tweens.add({
                         targets: fleetLabel,
                         x: toWorldXY.x,
-                        y: toWorldXY.y - 55,
+                        y: toWorldXY.y - GameScene.LABEL_OFFSET_Y,
                         duration: 1000,
                         ease: 'Power2'
                     });
@@ -401,7 +405,7 @@ export class GameScene extends Phaser.Scene {
             const worldXY = this.board?.tileXYToWorldXY(hex.x, hex.y);
             if (!worldXY) return; // Safety check
             for (const el of hex.elements) {
-                const labelY = worldXY.y - 55;
+                const labelY = worldXY.y - GameScene.LABEL_OFFSET_Y;
                 if (el.element === 'Planet') {
                     const labelDiv = document.createElement('div');
                     labelDiv.innerText = 'Earth';
