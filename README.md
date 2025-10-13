@@ -2,7 +2,7 @@
 
 <img src="public/assets/images/chronotopia.png" alt="Chronotopia. Conquer Time. Rule everything." width="300" />
 
-Chronotopia is a 4X space deckbuilding game built with Phaser, TypeScript, Vite, and React.
+Chronotopia is a 4X space deckbuilding game built with Phaser, TypeScript, Vite, React and Zustand.
 
 ## Table of Contents
 
@@ -94,6 +94,7 @@ The objective is to release Chronotopia on Steam.
 - [TypeScript](https://www.typescriptlang.org/) for type-safe development
 - [Vite](https://vitejs.dev/) for fast builds and hot module replacement
 - [React](https://react.dev/) for UI components
+- [Zustand](https://zustand-demo.pmnd.rs/) for state management
 
 ## Getting Started
 
