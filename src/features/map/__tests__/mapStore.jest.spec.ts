@@ -277,4 +277,215 @@ describe('MapStore', () => {
             expect(setState).toHaveBeenCalled();
         });
     });
+
+    describe('moveFleet', () => {
+        beforeEach(() => {
+            // Set up test hexes with a fleet at (5, 5)
+            const testHexes: MapHex[] = [
+                { x: 5, y: 4, elements: [{ id: 'empty-5-4', element: 'Empty' }] },
+                { x: 5, y: 5, elements: [{ id: 'fleet-1', element: 'Fleet' }] },
+                { x: 6, y: 5, elements: [{ id: 'empty-6-5', element: 'Empty' }] },
+                { x: 4, y: 5, elements: [{ id: 'empty-4-5', element: 'Empty' }] }
+            ];
+            getState.mockReturnValue({ ...store, hexes: testHexes });
+        });
+
+        it('should move fleet from source to destination hex', () => {
+            setState.mockImplementation((newState) => {
+                // Check that fleet is removed from source hex
+                const sourceHex = newState.hexes.find((h: MapHex) => h.x === 5 && h.y === 5);
+                expect(sourceHex?.elements).not.toContainEqual(
+                    expect.objectContaining({ id: 'fleet-1', element: 'Fleet' })
+                );
+
+                // Check that fleet is added to destination hex
+                const destHex = newState.hexes.find((h: MapHex) => h.x === 6 && h.y === 5);
+                expect(destHex?.elements).toContainEqual(expect.objectContaining({ id: 'fleet-1', element: 'Fleet' }));
+            });
+
+            store.moveFleet({ fromX: 5, fromY: 5, toX: 6, toY: 5, fleetId: 'fleet-1' });
+
+            expect(setState).toHaveBeenCalled();
+        });
+
+        it('should calculate correct rotation for North movement (even column)', () => {
+            setState.mockImplementation((newState) => {
+                // Check fleet has correct rotation for North movement (0°)
+                const destHex = newState.hexes.find((h: MapHex) => h.x === 5 && h.y === 4);
+                const fleetElement = destHex?.elements.find(
+                    (el: { id: string; element: Element; rotation?: number }) => el.id === 'fleet-1'
+                );
+                expect(fleetElement?.rotation).toBe(0);
+            });
+
+            store.moveFleet({ fromX: 5, fromY: 5, toX: 5, toY: 4, fleetId: 'fleet-1' });
+
+            expect(setState).toHaveBeenCalled();
+        });
+
+        it('should calculate correct rotation for North-East movement (even column)', () => {
+            // Set up test with fleet at even column (4, 5)
+            const testHexes: MapHex[] = [
+                { x: 4, y: 5, elements: [{ id: 'fleet-1', element: 'Fleet' }] },
+                { x: 5, y: 4, elements: [{ id: 'empty-5-4', element: 'Empty' }] }
+            ];
+            getState.mockReturnValue({ ...store, hexes: testHexes });
+
+            setState.mockImplementation((newState) => {
+                // Check fleet has correct rotation for North-East movement (60°)
+                const destHex = newState.hexes.find((h: MapHex) => h.x === 5 && h.y === 4);
+                const fleetElement = destHex?.elements.find(
+                    (el: { id: string; element: Element; rotation?: number }) => el.id === 'fleet-1'
+                );
+                expect(fleetElement?.rotation).toBe(60);
+            });
+
+            store.moveFleet({ fromX: 4, fromY: 5, toX: 5, toY: 4, fleetId: 'fleet-1' });
+
+            expect(setState).toHaveBeenCalled();
+        });
+
+        it('should calculate correct rotation for South-East movement (even column)', () => {
+            // Set up test with fleet at even column (4, 5)
+            const testHexes: MapHex[] = [
+                { x: 4, y: 5, elements: [{ id: 'fleet-1', element: 'Fleet' }] },
+                { x: 5, y: 5, elements: [{ id: 'empty-5-5', element: 'Empty' }] }
+            ];
+            getState.mockReturnValue({ ...store, hexes: testHexes });
+
+            setState.mockImplementation((newState) => {
+                // Check fleet has correct rotation for South-East movement (120°)
+                const destHex = newState.hexes.find((h: MapHex) => h.x === 5 && h.y === 5);
+                const fleetElement = destHex?.elements.find(
+                    (el: { id: string; element: Element; rotation?: number }) => el.id === 'fleet-1'
+                );
+                expect(fleetElement?.rotation).toBe(120);
+            });
+
+            store.moveFleet({ fromX: 4, fromY: 5, toX: 5, toY: 5, fleetId: 'fleet-1' });
+
+            expect(setState).toHaveBeenCalled();
+        });
+
+        it('should calculate correct rotation for South movement (even column)', () => {
+            setState.mockImplementation((newState) => {
+                // Check fleet has correct rotation for South movement (180°)
+                const destHex = newState.hexes.find((h: MapHex) => h.x === 5 && h.y === 6);
+                const fleetElement = destHex?.elements.find(
+                    (el: { id: string; element: Element; rotation?: number }) => el.id === 'fleet-1'
+                );
+                expect(fleetElement?.rotation).toBe(180);
+            });
+
+            // Add destination hex for this test
+            const testHexes = getState().hexes;
+            testHexes.push({ x: 5, y: 6, elements: [{ id: 'empty-5-6', element: 'Empty' }] });
+            getState.mockReturnValue({ ...store, hexes: testHexes });
+
+            store.moveFleet({ fromX: 5, fromY: 5, toX: 5, toY: 6, fleetId: 'fleet-1' });
+
+            expect(setState).toHaveBeenCalled();
+        });
+
+        it('should calculate correct rotation for South-West movement (even column)', () => {
+            // Set up test with fleet at even column (4, 5)
+            const testHexes: MapHex[] = [
+                { x: 4, y: 5, elements: [{ id: 'fleet-1', element: 'Fleet' }] },
+                { x: 3, y: 5, elements: [{ id: 'empty-3-5', element: 'Empty' }] }
+            ];
+            getState.mockReturnValue({ ...store, hexes: testHexes });
+
+            setState.mockImplementation((newState) => {
+                // Check fleet has correct rotation for South-West movement (240°)
+                const destHex = newState.hexes.find((h: MapHex) => h.x === 3 && h.y === 5);
+                const fleetElement = destHex?.elements.find(
+                    (el: { id: string; element: Element; rotation?: number }) => el.id === 'fleet-1'
+                );
+                expect(fleetElement?.rotation).toBe(240);
+            });
+
+            store.moveFleet({ fromX: 4, fromY: 5, toX: 3, toY: 5, fleetId: 'fleet-1' });
+
+            expect(setState).toHaveBeenCalled();
+        });
+
+        it('should calculate correct rotation for North-West movement (odd column)', () => {
+            setState.mockImplementation((newState) => {
+                // Check fleet has correct rotation for North-West movement (300°)
+                const destHex = newState.hexes.find((h: MapHex) => h.x === 4 && h.y === 5);
+                const fleetElement = destHex?.elements.find(
+                    (el: { id: string; element: Element; rotation?: number }) => el.id === 'fleet-1'
+                );
+                expect(fleetElement?.rotation).toBe(300);
+            });
+
+            store.moveFleet({ fromX: 5, fromY: 5, toX: 4, toY: 5, fleetId: 'fleet-1' });
+
+            expect(setState).toHaveBeenCalled();
+        });
+
+        it('should calculate correct rotation for South-East movement (odd column)', () => {
+            // Set up test with fleet at odd column (3, 5)
+            const testHexes: MapHex[] = [
+                { x: 3, y: 5, elements: [{ id: 'fleet-1', element: 'Fleet' }] },
+                { x: 4, y: 5, elements: [{ id: 'empty-4-5', element: 'Empty' }] },
+                { x: 4, y: 6, elements: [{ id: 'empty-4-6', element: 'Empty' }] }
+            ];
+            getState.mockReturnValue({ ...store, hexes: testHexes });
+
+            setState.mockImplementation((newState) => {
+                // Check fleet has correct rotation for North-East movement from odd column (60°)
+                const destHex = newState.hexes.find((h: MapHex) => h.x === 4 && h.y === 5);
+                const fleetElement = destHex?.elements.find(
+                    (el: { id: string; element: Element; rotation?: number }) => el.id === 'fleet-1'
+                );
+                expect(fleetElement?.rotation).toBe(60);
+            });
+
+            store.moveFleet({ fromX: 3, fromY: 5, toX: 4, toY: 5, fleetId: 'fleet-1' });
+
+            expect(setState).toHaveBeenCalled();
+        });
+
+        it('should preserve existing elements in destination hex', () => {
+            // Set up destination hex with existing planet
+            const testHexes = getState().hexes;
+            const destHex = testHexes.find((h: MapHex) => h.x === 6 && h.y === 5);
+            if (destHex) {
+                destHex.elements = [{ id: 'planet-earth', element: 'Planet' }];
+            }
+            getState.mockReturnValue({ ...store, hexes: testHexes });
+
+            setState.mockImplementation((newState) => {
+                // Check that both planet and fleet exist in destination hex
+                const destHex = newState.hexes.find((h: MapHex) => h.x === 6 && h.y === 5);
+                expect(destHex?.elements).toContainEqual({ id: 'planet-earth', element: 'Planet' });
+                expect(destHex?.elements).toContainEqual(expect.objectContaining({ id: 'fleet-1', element: 'Fleet' }));
+                expect(destHex?.elements).toHaveLength(2);
+            });
+
+            store.moveFleet({ fromX: 5, fromY: 5, toX: 6, toY: 5, fleetId: 'fleet-1' });
+
+            expect(setState).toHaveBeenCalled();
+        });
+
+        it('should not affect other hexes during fleet movement', () => {
+            setState.mockImplementation((newState) => {
+                // Check that unrelated hex remains unchanged
+                const unchangedHex = newState.hexes.find((h: MapHex) => h.x === 5 && h.y === 4);
+                expect(unchangedHex?.elements).toEqual([{ id: 'empty-5-4', element: 'Empty' }]);
+            });
+
+            store.moveFleet({ fromX: 5, fromY: 5, toX: 6, toY: 5, fleetId: 'fleet-1' });
+
+            expect(setState).toHaveBeenCalled();
+        });
+
+        it('should handle moving non-existent fleet gracefully', () => {
+            store.moveFleet({ fromX: 5, fromY: 5, toX: 6, toY: 5, fleetId: 'non-existent-fleet' });
+
+            // setState should not be called when fleet doesn't exist
+            expect(setState).not.toHaveBeenCalled();
+        });
+    });
 });

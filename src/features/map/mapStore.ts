@@ -1,11 +1,12 @@
 import { type StateCreator } from 'zustand';
+import { calculateHexRotation } from './hexUtils';
 
 // TODO: Future: Asteroid, Wormhole, Star, BlackHole, Nebula, Debris, Building, Unit, Resource, Research, Item, Event, Shipyard, Starbase, Colony, TradeRoute, Anomaly, Artifact, Outpost, Mine
 export type Element = 'Empty' | 'Planet' | 'Fleet';
 export type MapHex = {
     x: number;
     y: number;
-    elements: { id: string; element: Element }[];
+    elements: { id: string; element: Element; rotation?: number }[];
     isActive?: boolean;
 };
 
@@ -17,6 +18,19 @@ export type MapStore = {
     getHex: ({ x, y }: { x: number; y: number }) => MapHex | undefined;
     updateHexElement: ({ x, y, element }: { x: number; y: number; element: { id: string; element: Element } }) => void;
     clearActiveHex: () => void;
+    moveFleet: ({
+        fromX,
+        fromY,
+        toX,
+        toY,
+        fleetId
+    }: {
+        fromX: number;
+        fromY: number;
+        toX: number;
+        toY: number;
+        fleetId: string;
+    }) => void;
 };
 
 export const createMapStore: StateCreator<MapStore> = (set, get) => ({
@@ -77,5 +91,55 @@ export const createMapStore: StateCreator<MapStore> = (set, get) => ({
         const { hexes } = get();
         const updatedHexes = hexes.map((hex) => ({ ...hex, isActive: false }));
         set({ hexes: updatedHexes, activeHex: null });
+    },
+
+    moveFleet: ({
+        fromX,
+        fromY,
+        toX,
+        toY,
+        fleetId
+    }: {
+        fromX: number;
+        fromY: number;
+        toX: number;
+        toY: number;
+        fleetId: string;
+    }) => {
+        const { hexes } = get();
+
+        // Check if fleet exists in source hex before proceeding
+        const sourceHex = hexes.find((hex) => hex.x === fromX && hex.y === fromY);
+        const fleetExists = sourceHex?.elements.some((el) => el.element === 'Fleet' && el.id === fleetId);
+
+        // Only proceed if fleet actually exists
+        if (!fleetExists) {
+            return;
+        }
+
+        // Calculate rotation using hex utility helper
+        const rotation = calculateHexRotation({ fromX, fromY, toX, toY });
+
+        const updatedHexes = hexes.map((hex) => {
+            // Remove fleet from source hex
+            if (hex.x === fromX && hex.y === fromY) {
+                return {
+                    ...hex,
+                    elements: hex.elements.filter((el) => !(el.element === 'Fleet' && el.id === fleetId))
+                };
+            }
+            // Add fleet to destination hex with rotation
+            if (hex.x === toX && hex.y === toY) {
+                return {
+                    ...hex,
+                    elements: [
+                        ...hex.elements.filter((el) => !(el.element === 'Fleet' && el.id === fleetId)),
+                        { id: fleetId, element: 'Fleet' as Element, rotation }
+                    ]
+                };
+            }
+            return hex;
+        });
+        set({ hexes: updatedHexes });
     }
 });
