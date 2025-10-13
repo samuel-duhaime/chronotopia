@@ -27,9 +27,9 @@ The objective is to release Chronotopia on Steam.
 | Turn system       |  Done   |
 | Resources system  |  Done   |
 | Map system        |  Done   |
+| Fleet system      |  Done   |
 | Planet system     | Planned |
 | Research system   | Planned |
-| Fleet system      | Planned |
 | Victory system    | Planned |
 | Card system       | Planned |
 | Steam integration | Planned |
