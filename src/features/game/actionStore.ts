@@ -1,9 +1,17 @@
 import { type StateCreator } from 'zustand';
 import { type TurnStore } from './gameStore';
 
+export const ActionType = {
+    Command: 'Command',
+    NextTurn: 'Next Turn'
+} as const;
+
+export type ActionType = (typeof ActionType)[keyof typeof ActionType];
+
 // Action types
 export type Action = {
     id: string;
+    type: ActionType;
     description: string;
     event: () => void;
     isActive: boolean;
@@ -21,12 +29,14 @@ export const createActionStore: StateCreator<ActionStore & TurnStore, [], [], Ac
     actions: [
         {
             id: '1',
+            type: ActionType.Command,
             description: 'Command',
             event: () => get().setNextActionActive(),
             isActive: true
         },
         {
             id: '2',
+            type: ActionType.NextTurn,
             description: 'Next Turn',
             event: () => {
                 get().nextTurn();
