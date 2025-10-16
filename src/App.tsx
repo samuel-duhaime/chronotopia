@@ -4,7 +4,7 @@ import BoardPlugin from 'phaser3-rex-plugins/plugins/board-plugin';
 import { ResourcesMenu } from './features/ui/ResourcesMenu';
 import { RightMenu } from './features/ui/RightMenu';
 import { ActionPanel } from './features/ui/ActionPanel';
-// import { Loading } from './features/common/Loading';
+import { CardsLayout } from './features/ui/CardsLayout';
 import { GameScene } from './features/game/GameScene';
 import './App.css';
 
@@ -61,6 +61,9 @@ export const App = () => {
 
             {/* Right menu displays current turn */}
             <RightMenu />
+
+            {/* Cards layout to display current cards in hand */}
+            <CardsLayout />
 
             {/* ActionPanel use current action */}
             <ActionPanel />

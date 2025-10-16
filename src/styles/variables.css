@@ -31,4 +31,7 @@
     --spacing-xl: 36px;
     --spacing-xxl: 56px;
     --corner-radius: 20px;
+
+    /* Z-index */
+    --z-card-container-hover: 1; /* Hovered card in card layout */
 }

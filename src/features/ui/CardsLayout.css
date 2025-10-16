@@ -1,0 +1,45 @@
+.cards-layout {
+    position: fixed;
+    display: flex;
+    gap: var(--spacing-s);
+    align-items: center;
+    bottom: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.card-container {
+    transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    cursor: pointer;
+}
+
+.card-container:hover {
+    filter: drop-shadow(0 10px 25px rgba(0, 126, 255, 0.4)) drop-shadow(0 5px 15px rgba(0, 126, 255, 0.3));
+    z-index: var(--z-card-container-hover);
+}
+
+.card-container:hover .card {
+    transform: translateY(-25px) scale(1.08);
+    box-shadow:
+        0 0 20px rgba(0, 126, 255, 0.6),
+        0 0 40px rgba(0, 126, 255, 0.3),
+        inset 0 0 15px rgba(255, 255, 255, 0.1);
+    animation: float 2.5s ease-in-out infinite;
+    border: 6px solid rgba(0, 126, 255, 0.8);
+}
+
+@keyframes float {
+    0%,
+    100% {
+        transform: translateY(-25px) scale(1.08);
+    }
+    25% {
+        transform: translateY(-30px) scale(1.08);
+    }
+    50% {
+        transform: translateY(-28px) scale(1.08);
+    }
+    75% {
+        transform: translateY(-22px) scale(1.08);
+    }
+}
