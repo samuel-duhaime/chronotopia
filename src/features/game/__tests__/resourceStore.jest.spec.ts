@@ -70,8 +70,8 @@ describe('ResourceStore', () => {
             const planetsCapacity = store.resources.find((r) => r.type === 'PlanetsCapacity');
             expect(planetsCapacity).toEqual({
                 type: 'PlanetsCapacity',
-                amount: 1,
-                maxCapacity: 2,
+                amount: 0,
+                maxCapacity: 1,
                 icon: faEarth
             });
 
@@ -79,19 +79,82 @@ describe('ResourceStore', () => {
             expect(fleetCapacity).toEqual({
                 type: 'FleetCapacity',
                 amount: 1,
-                maxCapacity: 2,
+                maxCapacity: 1,
                 icon: faRocket
             });
         });
     });
 
-    describe('setResources', () => {
-        it('should update resources when setResources is called', () => {
-            const newResources = [{ type: 'Crypto' as const, amount: 100, perTurn: 5, icon: faBitcoin }];
+    describe('getResource', () => {
+        it('should return the correct resource by type', () => {
+            getState.mockReturnValue(store);
 
-            store.setResources({ resources: newResources });
+            const crypto = store.getResource('Crypto');
+            expect(crypto).toEqual({
+                type: 'Crypto',
+                amount: 0,
+                perTurn: 1,
+                icon: faBitcoin
+            });
 
-            expect(setState).toHaveBeenCalledWith({ resources: newResources });
+            const science = store.getResource('Science');
+            expect(science).toEqual({
+                type: 'Science',
+                amount: 0,
+                perTurn: 1,
+                threshold: 25,
+                icon: faFlask
+            });
+        });
+
+        it('should return undefined for non-existent resource type', () => {
+            getState.mockReturnValue(store);
+
+            // @ts-expect-error - Testing with invalid resource type
+            const nonExistent = store.getResource('NonExistent');
+            expect(nonExistent).toBeUndefined();
+        });
+    });
+
+    describe('updateResource', () => {
+        it('should update a specific resource by type', () => {
+            const mockState = {
+                resources: [
+                    { type: 'Crypto' as const, amount: 10, perTurn: 1, icon: faBitcoin },
+                    { type: 'Science' as const, amount: 5, perTurn: 1, threshold: 25, icon: faFlask }
+                ]
+            };
+
+            setState.mockImplementation((updateFn) => {
+                const result = updateFn(mockState);
+                const updatedCrypto = result.resources.find(
+                    (r: { type: string; amount: number }) => r.type === 'Crypto'
+                );
+                expect(updatedCrypto?.amount).toBe(100);
+            });
+
+            store.updateResource('Crypto', { amount: 100 });
+
+            expect(setState).toHaveBeenCalled();
+        });
+
+        it('should not affect other resources when updating one', () => {
+            const mockState = {
+                resources: [
+                    { type: 'Crypto' as const, amount: 10, perTurn: 1, icon: faBitcoin },
+                    { type: 'Science' as const, amount: 5, perTurn: 1, threshold: 25, icon: faFlask }
+                ]
+            };
+
+            setState.mockImplementation((updateFn) => {
+                const result = updateFn(mockState);
+                const scienceResource = result.resources.find((r: { type: string }) => r.type === 'Science');
+                expect(scienceResource).toEqual(mockState.resources[1]); // Should remain unchanged
+            });
+
+            store.updateResource('Crypto', { amount: 100 });
+
+            expect(setState).toHaveBeenCalled();
         });
     });
 

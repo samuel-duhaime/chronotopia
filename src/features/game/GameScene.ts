@@ -392,6 +392,9 @@ export class GameScene extends Phaser.Scene {
                                 .setDisplaySize(30, 30)
                                 .setRotation(Phaser.Math.DegToRad(el.rotation || 0));
                         }
+                    } else if (el.element === 'Asteroid') {
+                        // TODO: Replace with asteroid image
+                        gameObject = this.add?.text(worldXY.x, worldXY.y, '☄️').setOrigin(0.5).setFontSize(40);
                     }
                     if (gameObject) {
                         this.mapContentGroup?.add(gameObject);
@@ -407,6 +410,7 @@ export class GameScene extends Phaser.Scene {
             for (const el of hex.elements) {
                 const labelY = worldXY.y - GameScene.LABEL_OFFSET_Y;
                 if (el.element === 'Planet') {
+                    // Planet label
                     const labelDiv = document.createElement('div');
                     labelDiv.innerText = 'Earth';
                     labelDiv.className = 'map-label';
@@ -458,6 +462,18 @@ export class GameScene extends Phaser.Scene {
                             this.mapContentGroup?.add(label);
                             this.children.bringToTop(label);
                         }
+                    }
+                }
+                if (el.element === 'Asteroid') {
+                    // Asteroid label
+                    const labelDiv = document.createElement('div');
+                    labelDiv.innerText = 'Asteroid';
+                    labelDiv.className = 'map-label';
+                    // TODO: Add a asteroid crypto amount. Right now there is infinite amount.
+                    const label = this.add?.dom(worldXY.x, labelY, labelDiv).setOrigin(0.5);
+                    if (label) {
+                        this.mapContentGroup?.add(label);
+                        this.children.bringToTop(label);
                     }
                 }
             }

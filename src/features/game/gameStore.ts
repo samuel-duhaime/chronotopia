@@ -33,21 +33,7 @@ export type TypeStore = {
     setType: ({ type }: { type: GameType }) => void;
 };
 
-// Export types for convenience
-export type {
-    Resource,
-    CryptoResource,
-    InfluenceResource,
-    ScienceResource,
-    HappinessResource,
-    PlanetsCapacityResource,
-    FleetCapacityResource
-} from './resourceStore';
-export type { Action, ActionStore } from './actionStore';
-export type { Fleet, FleetStore } from '../fleet/fleetStore';
-export type { Commander, CommanderStore } from '../commander/commanderStore';
-export type { Faction, Specie } from '../common/types';
-export type { MapHex, Element, MapStore } from '../map/mapStore';
+// Combine all individual stores into a single game store type
 export type GameStore = IdStore &
     NameStore &
     TypeStore &
@@ -78,7 +64,8 @@ export const useGameStore = create<GameStore>()((set, get, api) => ({
     // Turn Store implementation
     turn: 1,
     nextTurn: () => {
-        get().updateResourcesNextTurn(); // Update resources first
+        get().updateResourcesNextTurn(); // Update resources
+        get().updateFleetCardsNextTurn(); // Update fleet cards
         set((state) => ({ turn: state.turn + 1 })); // Then increment turn
     },
 

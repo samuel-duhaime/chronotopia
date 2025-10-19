@@ -6,14 +6,16 @@ import { ActionType } from '../game/actionStore';
 
 export const CardsLayout: FC = () => {
     const currentAction = useGameStore((state) => state.getCurrentAction());
+    // const fleetCards = useGameStore((state) => state.getFleetCards({ fleetId: 'fleet-1' }));
+    const playableFleetCards = useGameStore((state) => state.getFleetPlayableCards({ fleetId: 'fleet-1' }));
 
     if (currentAction?.type === ActionType.Command) {
         return (
             <div className="cards-layout">
-                {Array.from({ length: 5 }).map((_, index) => {
-                    const totalCards = 5;
+                {playableFleetCards.map((fleetCard, index) => {
+                    const totalCards = playableFleetCards.length;
                     const centerIndex = Math.floor((totalCards - 1) / 2);
-                    const distanceFromCenter = index - centerIndex; // -2, -1, 0, 1, 2
+                    const distanceFromCenter = index - centerIndex;
 
                     // Calculation for arc layout
                     const horizontalSpacing = distanceFromCenter * -80; // Wider horizontal spread
@@ -23,17 +25,18 @@ export const CardsLayout: FC = () => {
                     return (
                         <div
                             className="card-container"
-                            key={index}
+                            key={fleetCard.id}
                             style={{
                                 transform: `translateX(${horizontalSpacing}px) translateY(${verticalOffset}px) rotate(${rotation}deg)`
                             }}
                         >
                             <Card
-                                title={`Card ${index + 1}`}
-                                description={`Description for card ${index + 1}`}
-                                cardType={`Type ${index + 1}`}
-                                imageUrl={`/assets/images/cards/explore.png`}
-                                cost={1}
+                                name={fleetCard.name}
+                                description={fleetCard.description}
+                                cardType={fleetCard.type}
+                                imageUrl={`assets/images/cards/${fleetCard.imageUrl}`}
+                                turnCost={fleetCard.turnCost}
+                                onClick={() => fleetCard.effect()}
                             />
                         </div>
                     );

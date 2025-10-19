@@ -4,24 +4,25 @@ import { faClock } from '@fortawesome/free-solid-svg-icons';
 import './Card.css';
 
 interface CardProps {
-    title: string;
+    name: string;
     description: string;
     cardType: string;
     imageUrl: string;
-    cost: number;
+    turnCost: number;
+    onClick: () => void;
 }
 
-export const Card: FC<CardProps> = ({ title, description, cardType, imageUrl, cost }) => {
+export const Card: FC<CardProps> = ({ name, description, cardType, imageUrl, turnCost, onClick }) => {
     return (
-        <div className="card">
+        <div className="card" onClick={onClick}>
             {/* Cost */}
-            <div className="card-cost">
+            <div className="card-turn-cost">
                 <FontAwesomeIcon icon={faClock} />
-                {cost}
+                {turnCost}
             </div>
 
             {/* Title */}
-            <div className="card-title">{title}</div>
+            <div className="card-name">{name}</div>
 
             {/* Image Container */}
             <div
