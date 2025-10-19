@@ -9,6 +9,7 @@
         "lint": "eslint .",
         "preview": "vite preview",
         "test:unit": "npx jest",
+        "test:unit:coverage": "npx jest --coverage",
         "format": "prettier --write .",
         "format:check": "prettier --check ."
     },

@@ -155,18 +155,15 @@ describe('ActionStore', () => {
     });
 
     describe('action events', () => {
-        it('should call setNextActionActive when Command action event is triggered', () => {
-            const setNextActionActiveSpy = jest.fn();
-            getState.mockReturnValue({
-                actions: store.actions,
-                setNextActionActive: setNextActionActiveSpy,
-                ...mockTurnStore
-            });
+        it('should log message when Command action event is triggered', () => {
+            const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
 
             const commandAction = store.actions[0];
             commandAction.event();
 
-            expect(setNextActionActiveSpy).toHaveBeenCalled();
+            expect(consoleSpy).toHaveBeenCalledWith('Play a fleet card');
+
+            consoleSpy.mockRestore();
         });
 
         it('should call nextTurn and setNextActionActive when Next Turn action event is triggered', () => {

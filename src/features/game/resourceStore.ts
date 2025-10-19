@@ -52,21 +52,29 @@ export type Resource =
 // Define the resource management store
 export type ResourceStore = {
     resources: Resource[];
-    setResources: ({ resources }: { resources: Resource[] }) => void;
+    getResource: (type: Resource['type']) => Resource | undefined;
     updateResourcesNextTurn: () => void;
+    updateResource: (type: Resource['type'], updates: Partial<Omit<Resource, 'type' | 'icon'>>) => void;
 };
 
 // Create a store for resource management
-export const createResourceStore: StateCreator<ResourceStore> = (set) => ({
+export const createResourceStore: StateCreator<ResourceStore> = (set, get) => ({
     resources: [
         { type: 'Crypto', amount: 0, perTurn: 1, icon: faBitcoin },
         { type: 'Influence', amount: 0, perTurn: 1, icon: faGlobe },
         { type: 'Science', amount: 0, perTurn: 1, threshold: 25, icon: faFlask },
         { type: 'Happiness', amount: 0, perTurn: 1, threshold: 100, icon: faSmile },
-        { type: 'PlanetsCapacity', amount: 1, maxCapacity: 2, icon: faEarth },
-        { type: 'FleetCapacity', amount: 1, maxCapacity: 2, icon: faRocket }
+        { type: 'PlanetsCapacity', amount: 0, maxCapacity: 1, icon: faEarth },
+        { type: 'FleetCapacity', amount: 1, maxCapacity: 1, icon: faRocket }
     ],
-    setResources: ({ resources }) => set({ resources }),
+
+    // Get a specific resource by type
+    getResource: (type: Resource['type']) => {
+        const state = get();
+        return state.resources.find((resource) => resource.type === type);
+    },
+
+    // Update resources at the end of each turn
     updateResourcesNextTurn: () =>
         set((state) => ({
             resources: state.resources.map((resource) => {
@@ -88,5 +96,13 @@ export const createResourceStore: StateCreator<ResourceStore> = (set) => ({
                 }
                 return resource;
             })
+        })),
+
+    // Update a specific resource by type
+    updateResource: (type: Resource['type'], updates: Partial<Omit<Resource, 'type' | 'icon'>>) =>
+        set((state) => ({
+            resources: state.resources.map((resource) =>
+                resource.type === type ? { ...resource, ...updates } : resource
+            )
         }))
 });

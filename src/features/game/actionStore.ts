@@ -31,7 +31,7 @@ export const createActionStore: StateCreator<ActionStore & TurnStore, [], [], Ac
             id: '1',
             type: ActionType.Command,
             description: 'Command',
-            event: () => get().setNextActionActive(),
+            event: () => console.log('Play a fleet card'),
             isActive: true
         },
         {
@@ -45,10 +45,14 @@ export const createActionStore: StateCreator<ActionStore & TurnStore, [], [], Ac
             isActive: false
         }
     ],
+
+    // Get the current active action
     getCurrentAction: () => {
         const actions = get().actions;
         return actions.find((action) => action.isActive) || actions[0];
     },
+
+    // Set the next action as active
     setNextActionActive: () =>
         set((state) => {
             const currentIndex = state.actions.findIndex((action) => action.isActive);

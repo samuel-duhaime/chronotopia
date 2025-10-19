@@ -1,8 +1,8 @@
 import { type StateCreator } from 'zustand';
 import { calculateHexRotation } from './hexUtils';
 
-// TODO: Future: Asteroid, Wormhole, Star, BlackHole, Nebula, Debris, Building, Unit, Resource, Research, Item, Event, Shipyard, Starbase, Colony, TradeRoute, Anomaly, Artifact, Outpost, Mine
-export type Element = 'Empty' | 'Planet' | 'Fleet';
+// TODO: Future: Wormhole, Star, BlackHole, Nebula, Debris, Building, Unit, Resource, Research, Item, Event, Shipyard, Starbase, Colony, TradeRoute, Anomaly, Artifact, Outpost, Mine
+export type Element = 'Empty' | 'Planet' | 'Fleet' | 'Asteroid';
 export type MapHex = {
     x: number;
     y: number;
@@ -31,6 +31,7 @@ export type MapStore = {
         toY: number;
         fleetId: string;
     }) => void;
+    getFleetHex: ({ fleetId }: { fleetId: string }) => MapHex;
 };
 
 export const createMapStore: StateCreator<MapStore> = (set, get) => ({
@@ -45,6 +46,9 @@ export const createMapStore: StateCreator<MapStore> = (set, get) => ({
             for (let y = 0; y <= 10; y++) {
                 let elements: { id: string; element: Element }[] = [{ id: `empty-${x}-${y}`, element: 'Empty' }];
                 let isActive = false;
+                if (x === 3 && y === 3) {
+                    elements = [{ id: 'asteroid-1', element: 'Asteroid' }];
+                }
                 if (x === 5 && y === 4) {
                     elements = [{ id: 'planet-earth', element: 'Planet' }];
                 }
@@ -141,5 +145,16 @@ export const createMapStore: StateCreator<MapStore> = (set, get) => ({
             return hex;
         });
         set({ hexes: updatedHexes });
+    },
+
+    // Get the current hex where a specific fleet is located
+    getFleetHex: ({ fleetId }: { fleetId: string }) => {
+        const { hexes } = get();
+
+        return (
+            hexes.find((hex) =>
+                hex.elements.some((element) => element.element === 'Fleet' && element.id === fleetId)
+            ) || hexes[0]
+        );
     }
 });

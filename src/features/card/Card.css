@@ -14,7 +14,7 @@
     position: relative;
 }
 
-.card-cost {
+.card-turn-cost {
     position: absolute;
     display: flex;
     align-items: center;
@@ -29,7 +29,7 @@
     gap: var(--spacing-xs);
 }
 
-.card-title {
+.card-name {
     font: var(--text-body);
     font-weight: 700;
     color: var(--color-white);

@@ -21,7 +21,8 @@ jest.mock('../../fleet/fleetStore', () => ({
     createFleetStore: () => ({
         fleets: [],
         getFleet: jest.fn(),
-        getFleetWithCommander: jest.fn()
+        getFleetWithCommander: jest.fn(),
+        updateFleetCardsNextTurn: jest.fn()
     })
 }));
 
@@ -203,6 +204,15 @@ describe('GameStore', () => {
             state.nextTurn();
 
             expect(updateResourcesSpy).toHaveBeenCalled();
+        });
+
+        it('should call updateFleetCardsNextTurn when nextTurn is called', () => {
+            const state = useGameStore.getState();
+            const updateFleetCardsSpy = jest.spyOn(state, 'updateFleetCardsNextTurn');
+
+            state.nextTurn();
+
+            expect(updateFleetCardsSpy).toHaveBeenCalled();
         });
 
         it('should update resources before incrementing turn', () => {
